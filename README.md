@@ -15,6 +15,16 @@ This is the home of Openachieve Agent, a self-extensible coding agent CLI and su
 | **[@openachieve/agent](packages/coding-agent)** | Interactive coding agent CLI, exposed as `oa` |
 | **[@openachieve/tui](packages/tui)** | Terminal UI library with differential rendering |
 
+## Permissions & Containerization
+
+Openachieve Agent does not include a built-in permission system for restricting filesystem, process, network, or credential access. By default, it runs with the permissions of the user and process that launched it.
+
+If you need stronger boundaries, containerize or sandbox Openachieve Agent. See [packages/coding-agent/docs/containerization.md](packages/coding-agent/docs/containerization.md) for three patterns:
+
+- **OpenShell**: run the whole `oa` process in a policy-controlled sandbox.
+- **Gondolin extension**: keep `oa` and provider auth on the host while routing built-in tools and `!` commands into a local Linux micro-VM.
+- **Plain Docker**: run the whole `oa` process in a local container for simple isolation.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [AGENTS.md](AGENTS.md) for project-specific rules (for both humans and agents).
