@@ -1,5 +1,5 @@
 {
-	"name": "pi-monorepo",
+	"name": "openachieve-agent-monorepo",
 	"private": true,
 	"type": "module",
 	"workspaces": [

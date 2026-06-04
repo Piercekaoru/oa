@@ -1,5 +1,5 @@
 {
-	"name": "@earendil-works/pi-agent-core",
+	"name": "@openachieve/agent-core",
 	"version": "0.78.0",
 	"description": "General-purpose agent with transport abstraction, state management, and attachment support",
 	"type": "module",
@@ -8,10 +8,12 @@
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
+			"openachieve-source": "./src/index.ts",
 			"import": "./dist/index.js"
 		},
 		"./node": {
 			"types": "./dist/node.d.ts",
+			"openachieve-source": "./src/node.ts",
 			"import": "./dist/node.js"
 		},
 		"./package.json": "./package.json"
@@ -29,7 +31,7 @@
 		"prepublishOnly": "npm run clean && npm run build"
 	},
 	"dependencies": {
-		"@earendil-works/pi-ai": "^0.78.0",
+		"@openachieve/ai": "^0.78.0",
 		"ignore": "7.0.5",
 		"typebox": "1.1.38",
 		"yaml": "2.9.0"
@@ -45,7 +47,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/earendil-works/pi.git",
+		"url": "git+https://github.com/openachieve/openachieve-agent.git",
 		"directory": "packages/agent"
 	},
 	"engines": {

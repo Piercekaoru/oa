@@ -1,9 +1,11 @@
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { ENV_AGENT_DIR } from "../src/config.ts";
+import { SessionManager } from "../src/core/session-manager.ts";
+import { assistantMsg } from "./utilities.ts";
 
 const cliPath = resolve(__dirname, "../src/cli.ts");
 const tempDirs: string[] = [];
@@ -15,7 +17,7 @@ afterEach(() => {
 });
 
 function createTempDir(): string {
-	const dir = mkdtempSync(join(tmpdir(), "pi-session-id-readonly-"));
+	const dir = mkdtempSync(join(tmpdir(), "openachieve-session-id-readonly-"));
 	tempDirs.push(dir);
 	return dir;
 }
@@ -48,7 +50,7 @@ async function runCli(
 	args: string[] | ((dirs: CliDirs) => string[]),
 	setup?: (dirs: CliDirs) => void,
 ): Promise<{ code: number | null; agentDir: string; stderr: string }> {
-	const tempRoot = createTempDir();
+	const tempRoot = realpathSync(createTempDir());
 	const dirs: CliDirs = {
 		agentDir: join(tempRoot, "agent"),
 		projectDir: join(tempRoot, "project"),
@@ -66,7 +68,8 @@ async function runCli(
 			env: {
 				...process.env,
 				[ENV_AGENT_DIR]: dirs.agentDir,
-				PI_OFFLINE: "1",
+				NODE_OPTIONS: [process.env.NODE_OPTIONS, "--conditions=openachieve-source"].filter(Boolean).join(" "),
+				OPENACHIEVE_OFFLINE: "1",
 				TSX_TSCONFIG_PATH: resolve(__dirname, "../../../tsconfig.json"),
 			},
 			stdio: ["ignore", "ignore", "pipe"],
@@ -82,10 +85,8 @@ async function runCli(
 }
 
 function writeSession(sessionDir: string, cwd: string, id: string): void {
-	writeFileSync(
-		join(sessionDir, `${id}.jsonl`),
-		`${JSON.stringify({ type: "session", version: 3, id, timestamp: new Date().toISOString(), cwd })}\n`,
-	);
+	const session = SessionManager.create(cwd, sessionDir, { id });
+	session.appendMessage(assistantMsg("seed"));
 }
 
 describe("--session-id read-only commands", () => {

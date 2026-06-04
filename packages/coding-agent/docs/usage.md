@@ -1,4 +1,4 @@
-# Using Pi
+# Using Openachieve Agent
 
 This page collects day-to-day usage details that do not fit on the quickstart page.
 
@@ -53,7 +53,7 @@ Type `/` in the editor to open command completion. Extensions can register custo
 | `/reload` | Reload keybindings, extensions, skills, prompts, and context files |
 | `/hotkeys` | Show all keyboard shortcuts |
 | `/changelog` | Display version history |
-| `/quit` | Quit pi |
+| `/quit` | Quit Openachieve Agent |
 
 ## Message Queue
 
@@ -64,21 +64,21 @@ You can submit messages while the agent is still working:
 - **Escape** aborts and restores queued messages to the editor.
 - **Alt+Up** retrieves queued messages back to the editor.
 
-On Windows Terminal, Alt+Enter is fullscreen by default. Remap it as described in [Terminal setup](terminal-setup.md) if you want pi to receive the shortcut.
+On Windows Terminal, Alt+Enter is fullscreen by default. Remap it as described in [Terminal setup](terminal-setup.md) if you want Openachieve Agent to receive the shortcut.
 
 Configure delivery in [Settings](settings.md) with `steeringMode` and `followUpMode`.
 
 ## Sessions
 
-Sessions are saved automatically to `~/.pi/agent/sessions/`, organized by working directory.
+Sessions are saved automatically to `~/.openachieve/agent/sessions/`, organized by working directory.
 
 ```bash
-pi -c                  # Continue most recent session
-pi -r                  # Browse and select a session
-pi --no-session        # Ephemeral mode; do not save
-pi --name "my task"    # Set session display name at startup
-pi --session <path|id> # Use a specific session file or session ID
-pi --fork <path|id>    # Fork a session into a new session file
+Openachieve Agent -c                  # Continue most recent session
+Openachieve Agent -r                  # Browse and select a session
+oa --no-session        # Ephemeral mode; do not save
+oa --name "my task"    # Set session display name at startup
+oa --session <path|id> # Use a specific session file or session ID
+oa --fork <path|id>    # Fork a session into a new session file
 ```
 
 Useful session commands:
@@ -93,9 +93,9 @@ See [Sessions](sessions.md) and [Compaction](compaction.md) for details.
 
 ## Context Files
 
-Pi loads `AGENTS.md` or `CLAUDE.md` at startup from:
+Openachieve Agent loads `AGENTS.md` or `CLAUDE.md` at startup from:
 
-- `~/.pi/agent/AGENTS.md` for global instructions
+- `~/.openachieve/agent/AGENTS.md` for global instructions
 - parent directories, walking up from the current working directory
 - the current directory
 
@@ -105,8 +105,8 @@ Use context files for project conventions, commands, safety rules, and preferenc
 
 Replace the default system prompt with:
 
-- `.pi/SYSTEM.md` for a project
-- `~/.pi/agent/SYSTEM.md` globally
+- `.openachieve/SYSTEM.md` for a project
+- `~/.openachieve/agent/SYSTEM.md` globally
 
 Append to the default prompt without replacing it with `APPEND_SYSTEM.md` in either location.
 
@@ -116,31 +116,31 @@ Use `/export [file]` to write a session to HTML.
 
 Use `/share` to upload a private GitHub gist with a shareable HTML link.
 
-If you use pi for open source work and want to publish sessions for model, prompt, tool, and evaluation research, see [`badlogic/pi-share-hf`](https://github.com/badlogic/pi-share-hf). It publishes sessions to Hugging Face datasets.
+If you use Openachieve Agent for open source work and want to publish sessions for model, prompt, tool, and evaluation research, see [`badlogic/Openachieve Agent-share-hf`](https://github.com/badlogic/Openachieve Agent-share-hf). It publishes sessions to Hugging Face datasets.
 
 ## CLI Reference
 
 ```bash
-pi [options] [@files...] [messages...]
+Openachieve Agent [options] [@files...] [messages...]
 ```
 
 ### Package Commands
 
 ```bash
-pi install <source> [-l]     # Install package, -l for project-local
-pi remove <source> [-l]      # Remove package
-pi uninstall <source> [-l]   # Alias for remove
-pi update [source|self|pi]   # Update pi and packages; reconcile pinned git refs
-pi update --extensions       # Update packages only; reconcile pinned git refs
-pi update --self             # Update pi only
-pi update --extension <src>  # Update one package
-pi list                      # List installed packages
-pi config                    # Enable/disable package resources
+oa install <source> [-l]     # Install package, -l for project-local
+oa remove <source> [-l]      # Remove package
+oa uninstall <source> [-l]   # Alias for remove
+oa update [source|self|Openachieve Agent]   # Update Openachieve Agent and packages; reconcile pinned git refs
+oa update --extensions       # Update packages only; reconcile pinned git refs
+oa update --self             # Update Openachieve Agent only
+oa update --extension <src>  # Update one package
+oa list                      # List installed packages
+oa config                    # Enable/disable package resources
 ```
 
-These commands manage pi packages, not the pi CLI installation. To uninstall pi itself, see [Quickstart](quickstart.md#uninstall).
+These commands manage Openachieve packages, not the Openachieve Agent CLI installation. To uninstall Openachieve Agent itself, see [Quickstart](quickstart.md#uninstall).
 
-See [Pi Packages](packages.md) for package sources and security notes.
+See [Openachieve Agent Packages](packages.md) for package sources and security notes.
 
 ### Modes
 
@@ -152,10 +152,10 @@ See [Pi Packages](packages.md) for package sources and security notes.
 | `--mode rpc` | RPC mode over stdin/stdout; see [RPC mode](rpc.md) |
 | `--export <in> [out]` | Export a session to HTML |
 
-In print mode, pi also reads piped stdin and merges it into the initial prompt:
+In print mode, Openachieve Agent also reads piped stdin and merges it into the initial prompt:
 
 ```bash
-cat README.md | pi -p "Summarize this text"
+cat README.md | oa -p "Summarize this text"
 ```
 
 ### Model Options
@@ -209,7 +209,7 @@ Built-in tools: `read`, `bash`, `edit`, `write`, `grep`, `find`, `ls`.
 Combine `--no-*` with explicit flags to load exactly what you need, ignoring settings. Example:
 
 ```bash
-pi --no-extensions -e ./my-extension.ts
+oa --no-extensions -e ./my-extension.ts
 ```
 
 ### Other Options
@@ -227,62 +227,62 @@ pi --no-extensions -e ./my-extension.ts
 Prefix files with `@` to include them in the message:
 
 ```bash
-pi @prompt.md "Answer this"
-pi -p @screenshot.png "What's in this image?"
-pi @code.ts @test.ts "Review these files"
+Openachieve Agent @prompt.md "Answer this"
+oa -p @screenshot.png "What's in this image?"
+Openachieve Agent @code.ts @test.ts "Review these files"
 ```
 
 ### Examples
 
 ```bash
 # Interactive with initial prompt
-pi "List all .ts files in src/"
+Openachieve Agent "List all .ts files in src/"
 
 # Non-interactive
-pi -p "Summarize this codebase"
+oa -p "Summarize this codebase"
 
 # Non-interactive with piped stdin
-cat README.md | pi -p "Summarize this text"
+cat README.md | oa -p "Summarize this text"
 
 # Named one-shot session
-pi --name "release audit" -p "Audit this repository"
+oa --name "release audit" -p "Audit this repository"
 
 # Different model
-pi --provider openai --model gpt-4o "Help me refactor"
+oa --provider openai --model gpt-4o "Help me refactor"
 
 # Model with provider prefix
-pi --model openai/gpt-4o "Help me refactor"
+oa --model openai/gpt-4o "Help me refactor"
 
 # Model with thinking level shorthand
-pi --model sonnet:high "Solve this complex problem"
+oa --model sonnet:high "Solve this complex problem"
 
 # Limit model cycling
-pi --models "claude-*,gpt-4o"
+oa --models "claude-*,gpt-4o"
 
 # Read-only mode
-pi --tools read,grep,find,ls -p "Review the code"
+oa --tools read,grep,find,ls -p "Review the code"
 
 # Disable one extension or built-in tool while keeping the rest available
-pi --exclude-tools ask_question
+oa --exclude-tools ask_question
 ```
 
 ### Environment Variables
 
 | Variable | Description |
 |----------|-------------|
-| `PI_CODING_AGENT_DIR` | Override config directory; default is `~/.pi/agent` |
-| `PI_CODING_AGENT_SESSION_DIR` | Override session storage directory; overridden by `--session-dir` |
-| `PI_PACKAGE_DIR` | Override package directory, useful for Nix/Guix store paths |
-| `PI_OFFLINE` | Disable startup network operations, including update checks, package update checks, and install/update telemetry |
-| `PI_SKIP_VERSION_CHECK` | Skip the Pi version update check at startup. This prevents the `pi.dev` latest-version request |
-| `PI_TELEMETRY` | Override install/update telemetry and provider attribution headers: `1`/`true`/`yes` or `0`/`false`/`no`. This does not disable update checks |
-| `PI_CACHE_RETENTION` | Set to `long` for extended prompt cache where supported |
+| `OPENACHIEVE_CODING_AGENT_DIR` | Override config directory; default is `~/.openachieve/agent` |
+| `OPENACHIEVE_CODING_AGENT_SESSION_DIR` | Override session storage directory; overridden by `--session-dir` |
+| `OPENACHIEVE_PACKAGE_DIR` | Override package directory, useful for Nix/Guix store paths |
+| `OPENACHIEVE_OFFLINE` | Disable startup network operations, including update checks, package update checks, and install/update telemetry |
+| `OPENACHIEVE_SKIP_VERSION_CHECK` | Skip the Openachieve Agent version update check at startup. This prevents the `Openachieve service endpoint` latest-version request |
+| `OPENACHIEVE_TELEMETRY` | Override install/update telemetry and provider attribution headers: `1`/`true`/`yes` or `0`/`false`/`no`. This does not disable update checks |
+| `OPENACHIEVE_CACHE_RETENTION` | Set to `long` for extended prompt cache where supported |
 | `VISUAL`, `EDITOR` | External editor for Ctrl+G |
 
 ## Design Principles
 
-Pi keeps the core small and pushes workflow-specific behavior into extensions, skills, prompt templates, and packages.
+Openachieve Agent keeps the core small and pushes workflow-specific behavior into extensions, skills, prompt templates, and packages.
 
 It intentionally does not include built-in MCP, sub-agents, permission popups, plan mode, to-dos, or background bash. You can build or install those workflows as extensions or packages, or use external tools such as containers and tmux.
 
-For the full rationale, read the [blog post](https://mariozechner.at/posts/2025-11-30-pi-coding-agent/).
+For the full rationale, read the [blog post](https://mariozechner.at/posts/2025-11-30-Openachieve Agent-coding-agent/).

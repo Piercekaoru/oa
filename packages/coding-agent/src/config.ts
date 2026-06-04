@@ -309,7 +309,7 @@ export function getSelfUpdateUnavailableInstruction(
 ): string {
 	const method = detectInstallMethod();
 	if (method === "bun-binary") {
-		return `Download from: https://github.com/earendil-works/pi-mono/releases/latest`;
+		return `Download a new Openachieve Agent binary from your configured release channel.`;
 	}
 	const command = getSelfUpdateCommandForMethod(method, packageName, updatePackageName, npmCommand);
 	if (command) {
@@ -342,7 +342,7 @@ export function getUpdateInstruction(packageName: string): string {
  */
 export function getPackageDir(): string {
 	// Allow override via environment variable (useful for Nix/Guix where store paths tokenize poorly)
-	const envDir = process.env.PI_PACKAGE_DIR;
+	const envDir = process.env.OPENACHIEVE_PACKAGE_DIR;
 	if (envDir) {
 		return normalizePath(envDir);
 	}
@@ -440,16 +440,24 @@ export function getBundledInteractiveAssetPath(name: string): string {
 }
 
 // =============================================================================
-// App Config (from package.json piConfig)
+// App Config
 // =============================================================================
+
+interface OpenachieveConfig {
+	commandName?: string;
+	displayName?: string;
+	slug?: string;
+	configDir?: string;
+	envPrefix?: string;
+	latestVersionUrl?: string;
+	installTelemetryUrl?: string;
+	shareViewerUrl?: string;
+}
 
 interface PackageJson {
 	name?: string;
 	version?: string;
-	piConfig?: {
-		name?: string;
-		configDir?: string;
-	};
+	openachieveConfig?: OpenachieveConfig;
 }
 
 let pkg: PackageJson = {};
@@ -460,34 +468,57 @@ try {
 	if (err.code !== "ENOENT") throw e;
 }
 
-const piConfigName: string | undefined = pkg.piConfig?.name;
-export const PACKAGE_NAME: string = pkg.name || "@earendil-works/pi-coding-agent";
-export const APP_NAME: string = piConfigName || "pi";
-export const APP_TITLE: string = piConfigName ? APP_NAME : "π";
-export const CONFIG_DIR_NAME: string = pkg.piConfig?.configDir || ".pi";
+const openachieveConfig = pkg.openachieveConfig ?? {};
+
+export const APP_COMMAND: string = openachieveConfig.commandName || "oa";
+export const APP_DISPLAY_NAME: string = openachieveConfig.displayName || "Openachieve Agent";
+export const APP_SLUG: string = openachieveConfig.slug || "openachieve";
+export const ENV_PREFIX: string = openachieveConfig.envPrefix || "OPENACHIEVE";
+export const PACKAGE_NAME: string = pkg.name || "@openachieve/agent";
+export const APP_NAME: string = APP_COMMAND;
+export const APP_TITLE: string = APP_DISPLAY_NAME;
+export const CONFIG_DIR_NAME: string = openachieveConfig.configDir || ".openachieve";
 export const VERSION: string = pkg.version || "0.0.0";
 
-// e.g., PI_CODING_AGENT_DIR or TAU_CODING_AGENT_DIR
-export const ENV_AGENT_DIR = `${APP_NAME.toUpperCase()}_CODING_AGENT_DIR`;
-export const ENV_SESSION_DIR = `${APP_NAME.toUpperCase()}_CODING_AGENT_SESSION_DIR`;
+export const ENV_AGENT_DIR = `${ENV_PREFIX}_CODING_AGENT_DIR`;
+export const ENV_CODING_AGENT = `${ENV_PREFIX}_CODING_AGENT`;
+export const ENV_SESSION_DIR = `${ENV_PREFIX}_CODING_AGENT_SESSION_DIR`;
+export const ENV_STARTUP_BENCHMARK = `${ENV_PREFIX}_STARTUP_BENCHMARK`;
+export const ENV_CLEAR_ON_SHRINK = `${ENV_PREFIX}_CLEAR_ON_SHRINK`;
+export const ENV_HARDWARE_CURSOR = `${ENV_PREFIX}_HARDWARE_CURSOR`;
+export const ENV_LATEST_VERSION_URL = `${ENV_PREFIX}_LATEST_VERSION_URL`;
+export const ENV_INSTALL_TELEMETRY_URL = `${ENV_PREFIX}_INSTALL_TELEMETRY_URL`;
+export const ENV_OFFLINE = `${ENV_PREFIX}_OFFLINE`;
+export const ENV_PACKAGE_DIR = `${ENV_PREFIX}_PACKAGE_DIR`;
+export const ENV_SHARE_VIEWER_URL = `${ENV_PREFIX}_SHARE_VIEWER_URL`;
+export const ENV_SKIP_VERSION_CHECK = `${ENV_PREFIX}_SKIP_VERSION_CHECK`;
+export const ENV_TELEMETRY = `${ENV_PREFIX}_TELEMETRY`;
+export const ENV_TIMING = `${ENV_PREFIX}_TIMING`;
 
 export function expandTildePath(path: string): string {
 	return normalizePath(path);
 }
 
-const DEFAULT_SHARE_VIEWER_URL = "https://pi.dev/session/";
+export function getLatestVersionUrl(): string | undefined {
+	return process.env[ENV_LATEST_VERSION_URL] || openachieveConfig.latestVersionUrl;
+}
+
+export function getInstallTelemetryUrl(): string | undefined {
+	return process.env[ENV_INSTALL_TELEMETRY_URL] || openachieveConfig.installTelemetryUrl;
+}
 
 /** Get the share viewer URL for a gist ID */
-export function getShareViewerUrl(gistId: string): string {
-	const baseUrl = process.env.PI_SHARE_VIEWER_URL || DEFAULT_SHARE_VIEWER_URL;
+export function getShareViewerUrl(gistId: string): string | undefined {
+	const baseUrl = process.env[ENV_SHARE_VIEWER_URL] || openachieveConfig.shareViewerUrl;
+	if (!baseUrl) return undefined;
 	return `${baseUrl}#${gistId}`;
 }
 
 // =============================================================================
-// User Config Paths (~/.pi/agent/*)
+// User Config Paths (~/.openachieve/agent/*)
 // =============================================================================
 
-/** Get the agent config directory (e.g., ~/.pi/agent/) */
+/** Get the agent config directory (e.g., ~/.openachieve/agent/) */
 export function getAgentDir(): string {
 	const envDir = process.env[ENV_AGENT_DIR];
 	if (envDir) {

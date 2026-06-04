@@ -1,6 +1,6 @@
-import { getPiUserAgent } from "./pi-user-agent.ts";
+import { ENV_OFFLINE, ENV_SKIP_VERSION_CHECK, getLatestVersionUrl } from "../config.ts";
+import { getOpenachieveUserAgent } from "./openachieve-user-agent.ts";
 
-const LATEST_VERSION_URL = "https://pi.dev/api/latest-version";
 const DEFAULT_VERSION_CHECK_TIMEOUT_MS = 10000;
 
 export interface LatestPiRelease {
@@ -57,11 +57,13 @@ export async function getLatestPiRelease(
 	currentVersion: string,
 	options: { timeoutMs?: number } = {},
 ): Promise<LatestPiRelease | undefined> {
-	if (process.env.PI_SKIP_VERSION_CHECK || process.env.PI_OFFLINE) return undefined;
+	if (process.env[ENV_SKIP_VERSION_CHECK] || process.env[ENV_OFFLINE]) return undefined;
+	const latestVersionUrl = getLatestVersionUrl();
+	if (!latestVersionUrl) return undefined;
 
-	const response = await fetch(LATEST_VERSION_URL, {
+	const response = await fetch(latestVersionUrl, {
 		headers: {
-			"User-Agent": getPiUserAgent(currentVersion),
+			"User-Agent": getOpenachieveUserAgent(currentVersion),
 			accept: "application/json",
 		},
 		signal: AbortSignal.timeout(options.timeoutMs ?? DEFAULT_VERSION_CHECK_TIMEOUT_MS),

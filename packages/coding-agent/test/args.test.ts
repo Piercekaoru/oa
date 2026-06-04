@@ -1,5 +1,29 @@
 import { describe, expect, test } from "vitest";
-import { parseArgs } from "../src/cli/args.ts";
+import { parseArgs, printHelp } from "../src/cli/args.ts";
+
+describe("printHelp", () => {
+	test("shows Openachieve command and environment names", () => {
+		const calls: string[] = [];
+		const originalLog = console.log;
+		console.log = (message?: unknown) => {
+			calls.push(String(message));
+		};
+		try {
+			printHelp();
+		} finally {
+			console.log = originalLog;
+		}
+
+		const output = calls.join("\n");
+		expect(output).toContain("oa - AI coding assistant");
+		expect(output).toContain("oa install <source> [-l]");
+		expect(output).toContain("oa update [source|self|openachieve]");
+		expect(output).toContain("same as OPENACHIEVE_OFFLINE=1");
+		expect(output).toContain("OPENACHIEVE_CODING_AGENT_DIR");
+		expect(output).toContain("OPENACHIEVE_SHARE_VIEWER_URL");
+		expect(output).not.toContain(["pi", "dev"].join("."));
+	});
+});
 
 describe("parseArgs", () => {
 	describe("--version flag", () => {

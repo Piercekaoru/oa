@@ -1,6 +1,6 @@
 # Examples
 
-Example code for pi-coding-agent SDK and extensions.
+Example code for Openachieve Agent SDK and extensions.
 
 ## Directories
 

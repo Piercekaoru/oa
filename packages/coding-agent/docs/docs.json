@@ -12,7 +12,7 @@
           "path": "quickstart.md"
         },
         {
-          "title": "Using Pi",
+          "title": "Using Openachieve Agent",
           "path": "usage.md"
         },
         {
@@ -57,7 +57,7 @@
           "path": "themes.md"
         },
         {
-          "title": "Pi Packages",
+          "title": "Openachieve Agent Packages",
           "path": "packages.md"
         },
         {

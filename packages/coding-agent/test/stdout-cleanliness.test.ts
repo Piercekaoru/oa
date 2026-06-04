@@ -25,7 +25,7 @@ async function runCli(args: string[]): Promise<{ stdout: string; stderr: string;
 	const tempRoot = createTempDir();
 	const agentDir = join(tempRoot, "agent");
 	const projectDir = join(tempRoot, "project");
-	const projectConfigDir = join(projectDir, ".pi");
+	const projectConfigDir = join(projectDir, ".openachieve");
 	mkdirSync(agentDir, { recursive: true });
 	mkdirSync(projectConfigDir, { recursive: true });
 
@@ -59,6 +59,7 @@ async function runCli(args: string[]): Promise<{ stdout: string; stderr: string;
 			env: {
 				...process.env,
 				[ENV_AGENT_DIR]: agentDir,
+				NODE_OPTIONS: [process.env.NODE_OPTIONS, "--conditions=openachieve-source"].filter(Boolean).join(" "),
 				TSX_TSCONFIG_PATH: resolve(__dirname, "../../../tsconfig.json"),
 			},
 			stdio: ["ignore", "pipe", "pipe"],

@@ -1,5 +1,5 @@
 {
-	"name": "@earendil-works/pi-ai",
+	"name": "@openachieve/ai",
 	"version": "0.78.0",
 	"description": "Unified LLM API with automatic model discovery and provider configuration",
 	"type": "module",
@@ -8,51 +8,62 @@
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
+			"openachieve-source": "./src/index.ts",
 			"import": "./dist/index.js"
 		},
 		"./anthropic": {
 			"types": "./dist/providers/anthropic.d.ts",
+			"openachieve-source": "./src/providers/anthropic.ts",
 			"import": "./dist/providers/anthropic.js"
 		},
 		"./azure-openai-responses": {
 			"types": "./dist/providers/azure-openai-responses.d.ts",
+			"openachieve-source": "./src/providers/azure-openai-responses.ts",
 			"import": "./dist/providers/azure-openai-responses.js"
 		},
 		"./google": {
 			"types": "./dist/providers/google.d.ts",
+			"openachieve-source": "./src/providers/google.ts",
 			"import": "./dist/providers/google.js"
 		},
 		"./google-vertex": {
 			"types": "./dist/providers/google-vertex.d.ts",
+			"openachieve-source": "./src/providers/google-vertex.ts",
 			"import": "./dist/providers/google-vertex.js"
 		},
 		"./mistral": {
 			"types": "./dist/providers/mistral.d.ts",
+			"openachieve-source": "./src/providers/mistral.ts",
 			"import": "./dist/providers/mistral.js"
 		},
 		"./openai-codex-responses": {
 			"types": "./dist/providers/openai-codex-responses.d.ts",
+			"openachieve-source": "./src/providers/openai-codex-responses.ts",
 			"import": "./dist/providers/openai-codex-responses.js"
 		},
 		"./openai-completions": {
 			"types": "./dist/providers/openai-completions.d.ts",
+			"openachieve-source": "./src/providers/openai-completions.ts",
 			"import": "./dist/providers/openai-completions.js"
 		},
 		"./openai-responses": {
 			"types": "./dist/providers/openai-responses.d.ts",
+			"openachieve-source": "./src/providers/openai-responses.ts",
 			"import": "./dist/providers/openai-responses.js"
 		},
 		"./oauth": {
 			"types": "./dist/oauth.d.ts",
+			"openachieve-source": "./src/oauth.ts",
 			"import": "./dist/oauth.js"
 		},
 		"./bedrock-provider": {
 			"types": "./dist/bedrock-provider.d.ts",
+			"openachieve-source": "./src/bedrock-provider.ts",
 			"import": "./dist/bedrock-provider.js"
 		}
 	},
 	"bin": {
-		"pi-ai": "./dist/cli.js"
+		"oa-ai": "./dist/cli.js"
 	},
 	"files": [
 		"dist",
@@ -92,7 +103,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/earendil-works/pi.git",
+		"url": "git+https://github.com/openachieve/openachieve-agent.git",
 		"directory": "packages/ai"
 	},
 	"engines": {

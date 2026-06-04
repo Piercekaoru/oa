@@ -7,20 +7,26 @@ import {
 	isNewerPackageVersion,
 } from "../src/utils/version-check.ts";
 
-const originalSkipVersionCheck = process.env.PI_SKIP_VERSION_CHECK;
-const originalOffline = process.env.PI_OFFLINE;
+const originalLatestVersionUrl = process.env.OPENACHIEVE_LATEST_VERSION_URL;
+const originalSkipVersionCheck = process.env.OPENACHIEVE_SKIP_VERSION_CHECK;
+const originalOffline = process.env.OPENACHIEVE_OFFLINE;
 
 afterEach(() => {
 	vi.unstubAllGlobals();
-	if (originalSkipVersionCheck === undefined) {
-		delete process.env.PI_SKIP_VERSION_CHECK;
+	if (originalLatestVersionUrl === undefined) {
+		delete process.env.OPENACHIEVE_LATEST_VERSION_URL;
 	} else {
-		process.env.PI_SKIP_VERSION_CHECK = originalSkipVersionCheck;
+		process.env.OPENACHIEVE_LATEST_VERSION_URL = originalLatestVersionUrl;
+	}
+	if (originalSkipVersionCheck === undefined) {
+		delete process.env.OPENACHIEVE_SKIP_VERSION_CHECK;
+	} else {
+		process.env.OPENACHIEVE_SKIP_VERSION_CHECK = originalSkipVersionCheck;
 	}
 	if (originalOffline === undefined) {
-		delete process.env.PI_OFFLINE;
+		delete process.env.OPENACHIEVE_OFFLINE;
 	} else {
-		process.env.PI_OFFLINE = originalOffline;
+		process.env.OPENACHIEVE_OFFLINE = originalOffline;
 	}
 });
 
@@ -34,6 +40,7 @@ describe("version checks", () => {
 	});
 
 	it("returns only newer versions", async () => {
+		process.env.OPENACHIEVE_LATEST_VERSION_URL = "https://updates.openachieve.example/latest-version";
 		const fetchMock = vi.fn(async () => Response.json({ version: "1.2.3" }));
 		vi.stubGlobal("fetch", fetchMock);
 
@@ -41,16 +48,25 @@ describe("version checks", () => {
 		await expect(checkForNewPiVersion("1.2.2")).resolves.toEqual({ version: "1.2.3" });
 	});
 
-	it("uses the pi.dev version check api with a pi user agent", async () => {
+	it("skips version checks by default when no Openachieve endpoint is configured", async () => {
+		const fetchMock = vi.fn();
+		vi.stubGlobal("fetch", fetchMock);
+
+		await expect(getLatestPiVersion("1.2.3")).resolves.toBeUndefined();
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("uses the configured Openachieve version check api with an oa user agent", async () => {
+		process.env.OPENACHIEVE_LATEST_VERSION_URL = "https://updates.openachieve.example/latest-version";
 		const fetchMock = vi.fn(async () => Response.json({ version: "1.2.4" }));
 		vi.stubGlobal("fetch", fetchMock);
 
 		await expect(getLatestPiVersion("1.2.3")).resolves.toBe("1.2.4");
 		expect(fetchMock).toHaveBeenCalledWith(
-			"https://pi.dev/api/latest-version",
+			"https://updates.openachieve.example/latest-version",
 			expect.objectContaining({
 				headers: expect.objectContaining({
-					"User-Agent": expect.stringMatching(/^pi\/1\.2\.3 /),
+					"User-Agent": expect.stringMatching(/^oa\/1\.2\.3 /),
 					accept: "application/json",
 				}),
 			}),
@@ -58,21 +74,23 @@ describe("version checks", () => {
 	});
 
 	it("returns the active package metadata from the version check api", async () => {
+		process.env.OPENACHIEVE_LATEST_VERSION_URL = "https://updates.openachieve.example/latest-version";
 		const fetchMock = vi.fn(async () =>
 			Response.json({
-				packageName: "@new-scope/pi",
+				packageName: "@openachieve/agent",
 				version: "1.2.4",
 			}),
 		);
 		vi.stubGlobal("fetch", fetchMock);
 
 		await expect(getLatestPiRelease("1.2.3")).resolves.toEqual({
-			packageName: "@new-scope/pi",
+			packageName: "@openachieve/agent",
 			version: "1.2.4",
 		});
 	});
 
 	it("returns update notes from the version check api", async () => {
+		process.env.OPENACHIEVE_LATEST_VERSION_URL = "https://updates.openachieve.example/latest-version";
 		const fetchMock = vi.fn(async () => Response.json({ note: " **Read this** ", version: "1.2.4" }));
 		vi.stubGlobal("fetch", fetchMock);
 
@@ -80,7 +98,8 @@ describe("version checks", () => {
 	});
 
 	it("skips api calls when version checks are disabled", async () => {
-		process.env.PI_SKIP_VERSION_CHECK = "1";
+		process.env.OPENACHIEVE_LATEST_VERSION_URL = "https://updates.openachieve.example/latest-version";
+		process.env.OPENACHIEVE_SKIP_VERSION_CHECK = "1";
 		const fetchMock = vi.fn();
 		vi.stubGlobal("fetch", fetchMock);
 
