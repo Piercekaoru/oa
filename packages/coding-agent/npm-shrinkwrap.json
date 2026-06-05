@@ -1,17 +1,17 @@
 {
 	"name": "@openachieve/agent",
-	"version": "0.78.0",
+	"version": "0.78.1",
 	"lockfileVersion": 3,
 	"requires": true,
 	"packages": {
 		"": {
 			"name": "@openachieve/agent",
-			"version": "0.78.0",
+			"version": "0.78.1",
 			"license": "MIT",
 			"dependencies": {
-				"@openachieve/agent-core": "^0.78.0",
-				"@openachieve/ai": "^0.78.0",
-				"@openachieve/tui": "^0.78.0",
+				"@openachieve/agent-core": "^0.78.1",
+				"@openachieve/ai": "^0.78.1",
+				"@openachieve/tui": "^0.78.1",
 				"@silvia-odwyer/photon-node": "0.3.4",
 				"chalk": "5.6.2",
 				"cross-spawn": "7.0.6",
@@ -699,11 +699,11 @@
 			]
 		},
 		"node_modules/@openachieve/agent-core": {
-			"version": "0.78.0",
-			"resolved": "https://registry.npmjs.org/@openachieve/agent-core/-/agent-core-0.78.0.tgz",
+			"version": "0.78.1",
+			"resolved": "https://registry.npmjs.org/@openachieve/agent-core/-/agent-core-0.78.1.tgz",
 			"license": "MIT",
 			"dependencies": {
-				"@openachieve/ai": "^0.78.0",
+				"@openachieve/ai": "^0.78.1",
 				"ignore": "7.0.5",
 				"typebox": "1.1.38",
 				"yaml": "2.9.0"
@@ -713,8 +713,8 @@
 			}
 		},
 		"node_modules/@openachieve/ai": {
-			"version": "0.78.0",
-			"resolved": "https://registry.npmjs.org/@openachieve/ai/-/ai-0.78.0.tgz",
+			"version": "0.78.1",
+			"resolved": "https://registry.npmjs.org/@openachieve/ai/-/ai-0.78.1.tgz",
 			"license": "MIT",
 			"dependencies": {
 				"@anthropic-ai/sdk": "0.91.1",
@@ -736,8 +736,8 @@
 			}
 		},
 		"node_modules/@openachieve/tui": {
-			"version": "0.78.0",
-			"resolved": "https://registry.npmjs.org/@openachieve/tui/-/tui-0.78.0.tgz",
+			"version": "0.78.1",
+			"resolved": "https://registry.npmjs.org/@openachieve/tui/-/tui-0.78.1.tgz",
 			"license": "MIT",
 			"dependencies": {
 				"get-east-asian-width": "1.6.0",
