@@ -8,7 +8,8 @@
 		"displayName": "Openachieve Agent",
 		"slug": "openachieve",
 		"configDir": ".openachieve",
-		"envPrefix": "OPENACHIEVE"
+		"envPrefix": "OPENACHIEVE",
+		"latestVersionUrl": "https://registry.npmjs.org/@openachieve/agent/latest"
 	},
 	"bin": {
 		"oa": "dist/cli.js"

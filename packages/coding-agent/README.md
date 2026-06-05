@@ -73,12 +73,6 @@ npm install -g --ignore-scripts @openachieve/agent
 
 `--ignore-scripts` disables dependency lifecycle scripts during install. Openachieve Agent does not require install scripts for normal npm installs.
 
-Installer alternative:
-
-```bash
-curl -fsSL https://openachieve.example/install.sh | sh
-```
-
 Authenticate with an API key:
 
 ```bash
