@@ -32,7 +32,7 @@ import { createAsyncJobTracker } from "../runs/background/async-job-tracker.ts";
 import registerSubagentNotify, { type SubagentNotifyDetails } from "../runs/background/notify.ts";
 import { createResultWatcher } from "../runs/background/result-watcher.ts";
 import { createSubagentExecutor, type SubagentParamsLike } from "../runs/foreground/subagent-executor.ts";
-import { SUBAGENT_CHILD_ENV, SUBAGENT_FANOUT_CHILD_ENV } from "../runs/shared/pi-args.ts";
+import { SUBAGENT_CHILD_ENV, SUBAGENT_FANOUT_CHILD_ENV } from "../runs/shared/oa-args.ts";
 import { cleanupAllArtifactDirs, cleanupOldArtifacts, getArtifactsDir } from "../shared/artifacts.ts";
 import { formatDuration, shortenPath } from "../shared/formatters.ts";
 import { resolveCurrentSessionId } from "../shared/session-identity.ts";
@@ -86,7 +86,7 @@ function getSubagentSessionRoot(parentSessionFile: string | null): string {
 		const sessionsDir = path.dirname(parentSessionFile);
 		return path.join(sessionsDir, baseName);
 	}
-	return fs.mkdtempSync(path.join(os.tmpdir(), "pi-subagent-session-"));
+	return fs.mkdtempSync(path.join(os.tmpdir(), "oa-subagent-session-"));
 }
 
 function expandTilde(p: string): string {

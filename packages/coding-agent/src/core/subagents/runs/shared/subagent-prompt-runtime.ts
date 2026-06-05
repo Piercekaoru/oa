@@ -1,8 +1,9 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { APP_COMMAND, APP_DISPLAY_NAME } from "../../../../config.ts";
 import type { ExtensionAPI } from "../../compat/coding-agent.ts";
 import type { JsonSchemaObject } from "../../shared/types.ts";
-import { SUBAGENT_FANOUT_CHILD_ENV } from "./pi-args.ts";
+import { SUBAGENT_FANOUT_CHILD_ENV } from "./oa-args.ts";
 import {
 	STRUCTURED_OUTPUT_CAPTURE_ENV,
 	STRUCTURED_OUTPUT_SCHEMA_ENV,
@@ -111,7 +112,8 @@ export function rewriteSubagentPrompt(
 	rewritten = stripChildBoundaryInstructions(rewritten);
 	const boundary = options.fanoutChild ? CHILD_FANOUT_BOUNDARY_INSTRUCTIONS : CHILD_SUBAGENT_BOUNDARY_INSTRUCTIONS;
 	const structured = process.env[STRUCTURED_OUTPUT_CAPTURE_ENV] ? `\n\n${STRUCTURED_OUTPUT_INSTRUCTIONS}` : "";
-	return `${boundary}${structured}\n\n${rewritten}`;
+	const identity = `You are running inside ${APP_DISPLAY_NAME} (the ${APP_COMMAND} CLI). If asked what tool, product, or harness you run in, answer ${APP_DISPLAY_NAME}.`;
+	return `${identity}\n\n${boundary}${structured}\n\n${rewritten}`;
 }
 
 function isParentOnlySubagentMessage(message: unknown): boolean {

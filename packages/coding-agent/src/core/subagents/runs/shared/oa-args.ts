@@ -9,16 +9,20 @@ import { STRUCTURED_OUTPUT_CAPTURE_ENV, STRUCTURED_OUTPUT_SCHEMA_ENV } from "./s
 
 const THINKING_LEVELS = ["off", "minimal", "low", "medium", "high", "xhigh"];
 const TASK_ARG_LIMIT = 8000;
+// Match the extension of THIS module so sibling runtime modules resolve under both the
+// TypeScript runtime (".ts" via jiti/tsx) and compiled dist (".js"). Hardcoding ".ts"
+// breaks global installs, where only the compiled ".js" files exist.
+const RUNTIME_EXT = import.meta.url.endsWith(".ts") ? ".ts" : ".js";
 const PROMPT_RUNTIME_EXTENSION_PATH = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
-	"subagent-prompt-runtime.ts",
+	`subagent-prompt-runtime${RUNTIME_EXT}`,
 );
 const FANOUT_CHILD_EXTENSION_PATH = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"..",
 	"..",
 	"extension",
-	"fanout-child.ts",
+	`fanout-child${RUNTIME_EXT}`,
 );
 export const SUBAGENT_CHILD_ENV = "OPENACHIEVE_SUBAGENT_CHILD";
 export const SUBAGENT_ORCHESTRATOR_TARGET_ENV = "OPENACHIEVE_SUBAGENT_ORCHESTRATOR_TARGET";
@@ -35,7 +39,7 @@ export const SUBAGENT_PARENT_DEPTH_ENV = "OPENACHIEVE_SUBAGENT_PARENT_DEPTH";
 export const SUBAGENT_PARENT_PATH_ENV = "OPENACHIEVE_SUBAGENT_PARENT_PATH";
 export const SUBAGENT_PARENT_CAPABILITY_TOKEN_ENV = "OPENACHIEVE_SUBAGENT_PARENT_CAPABILITY_TOKEN";
 
-interface BuildPiArgsInput {
+interface BuildOaArgsInput {
 	baseArgs: string[];
 	task: string;
 	sessionEnabled: boolean;
@@ -72,7 +76,7 @@ interface BuildPiArgsInput {
 	};
 }
 
-interface BuildPiArgsResult {
+interface BuildOaArgsResult {
 	args: string[];
 	env: Record<string, string | undefined>;
 	tempDir?: string;
@@ -85,7 +89,7 @@ export function applyThinkingSuffix(model: string | undefined, thinking: string 
 	return `${model}:${thinking}`;
 }
 
-export function buildPiArgs(input: BuildPiArgsInput): BuildPiArgsResult {
+export function buildOaArgs(input: BuildOaArgsInput): BuildOaArgsResult {
 	const args = [...input.baseArgs];
 
 	if (input.sessionFile) {
@@ -148,7 +152,7 @@ export function buildPiArgs(input: BuildPiArgsInput): BuildPiArgsResult {
 
 	let tempDir: string | undefined;
 	if (input.systemPrompt !== undefined && input.systemPrompt !== null) {
-		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "pi-subagent-"));
+		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "oa-subagent-"));
 		const stem = (input.promptFileStem ?? "prompt").replace(/[^\w.-]/g, "_");
 		const promptPath = path.join(tempDir, `${stem}.md`);
 		fs.writeFileSync(promptPath, input.systemPrompt, { mode: 0o600 });
@@ -157,7 +161,7 @@ export function buildPiArgs(input: BuildPiArgsInput): BuildPiArgsResult {
 
 	if (input.task.length > TASK_ARG_LIMIT) {
 		if (!tempDir) {
-			tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "pi-subagent-"));
+			tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "oa-subagent-"));
 		}
 		const taskFilePath = path.join(tempDir, "task.md");
 		fs.writeFileSync(taskFilePath, `Task: ${input.task}`, { mode: 0o600 });

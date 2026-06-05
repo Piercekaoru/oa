@@ -63,6 +63,8 @@ import {
 } from "../shared/long-running-guard.ts";
 import { formatModelAttemptNote, isRetryableModelFailure } from "../shared/model-fallback.ts";
 import { nestedSummaryFromAsyncStatus, writeNestedEvent } from "../shared/nested-events.ts";
+import { buildOaArgs, cleanupTempDir } from "../shared/oa-args.ts";
+import { getOaSpawnCommand, OA_CODING_AGENT_PACKAGE, resolveInstalledOaPackageRoot } from "../shared/oa-spawn.ts";
 import {
 	aggregateParallelOutputs,
 	flattenSteps,
@@ -73,8 +75,6 @@ import {
 	type RunnerStep,
 	type RunnerSubagentStep as SubagentStep,
 } from "../shared/parallel-utils.ts";
-import { buildPiArgs, cleanupTempDir } from "../shared/pi-args.ts";
-import { getPiSpawnCommand, PI_CODING_AGENT_PACKAGE, resolveInstalledPiPackageRoot } from "../shared/pi-spawn.ts";
 import {
 	captureSingleOutputSnapshot,
 	finalizeSingleOutput,
@@ -116,8 +116,8 @@ interface SubagentRunConfig {
 	sessionDir?: string;
 	asyncDir: string;
 	sessionId?: string | null;
-	piPackageRoot?: string;
-	piArgv1?: string;
+	oaPackageRoot?: string;
+	oaArgv1?: string;
 	worktreeSetupHook?: string;
 	worktreeSetupHookTimeoutMs?: number;
 	controlConfig?: ResolvedControlConfig;
@@ -254,8 +254,8 @@ function runPiStreaming(
 	cwd: string,
 	outputFile: string,
 	env?: Record<string, string | undefined>,
-	piPackageRoot?: string,
-	piArgv1?: string,
+	oaPackageRoot?: string,
+	oaArgv1?: string,
 	maxSubagentDepth?: number,
 	childEventContext?: ChildEventContext,
 	registerInterrupt?: (interrupt: (() => void) | undefined) => void,
@@ -264,9 +264,9 @@ function runPiStreaming(
 	return new Promise((resolve) => {
 		const outputStream = fs.createWriteStream(outputFile, { flags: "w" });
 		const spawnEnv = { ...process.env, ...(env ?? {}), ...getSubagentDepthEnv(maxSubagentDepth) };
-		const spawnSpec = getPiSpawnCommand(args, {
-			...(piPackageRoot ? { piPackageRoot } : {}),
-			...(piArgv1 ? { argv1: piArgv1 } : {}),
+		const spawnSpec = getOaSpawnCommand(args, {
+			...(oaPackageRoot ? { oaPackageRoot } : {}),
+			...(oaArgv1 ? { argv1: oaArgv1 } : {}),
 		});
 		const child = spawn(spawnSpec.command, spawnSpec.args, {
 			cwd,
@@ -496,14 +496,14 @@ function runPiStreaming(
 	});
 }
 
-function resolvePiPackageRootFallback(): string {
-	const root = resolveInstalledPiPackageRoot();
+function resolveOaPackageRootFallback(): string {
+	const root = resolveInstalledOaPackageRoot();
 	if (root) return root;
-	throw new Error(`Could not resolve ${PI_CODING_AGENT_PACKAGE} package root`);
+	throw new Error(`Could not resolve ${OA_CODING_AGENT_PACKAGE} package root`);
 }
 
-async function exportSessionHtml(sessionFile: string, outputDir: string, piPackageRoot?: string): Promise<string> {
-	const pkgRoot = piPackageRoot ?? resolvePiPackageRootFallback();
+async function exportSessionHtml(sessionFile: string, outputDir: string, oaPackageRoot?: string): Promise<string> {
+	const pkgRoot = oaPackageRoot ?? resolveOaPackageRootFallback();
 	const exportModulePath = path.join(pkgRoot, "dist", "core", "export-html", "index.js");
 	const moduleUrl = pathToFileURL(exportModulePath).href;
 	const mod = await import(moduleUrl);
@@ -616,8 +616,8 @@ interface SingleStepContext {
 	flatIndex: number;
 	flatStepCount: number;
 	outputFile: string;
-	piPackageRoot?: string;
-	piArgv1?: string;
+	oaPackageRoot?: string;
+	oaArgv1?: string;
 	registerInterrupt?: (interrupt: (() => void) | undefined) => void;
 	childIntercomTarget?: string;
 	orchestratorIntercomTarget?: string;
@@ -703,7 +703,7 @@ async function runSingleStep(
 				// Missing/stale structured-output files are handled after the child exits.
 			}
 		}
-		const { args, env, tempDir } = buildPiArgs({
+		const { args, env, tempDir } = buildOaArgs({
 			baseArgs: ["--mode", "json", "-p"],
 			task,
 			sessionEnabled,
@@ -735,8 +735,8 @@ async function runSingleStep(
 			step.cwd ?? ctx.cwd,
 			ctx.outputFile,
 			env,
-			ctx.piPackageRoot,
-			ctx.piArgv1,
+			ctx.oaPackageRoot,
+			ctx.oaArgv1,
 			step.maxSubagentDepth,
 			{ eventsPath, runId: ctx.id, stepIndex: ctx.flatIndex, agent: step.agent },
 			ctx.registerInterrupt,
@@ -1810,8 +1810,8 @@ async function runSubagent(config: SubagentRunConfig): Promise<void> {
 					flatIndex: fi,
 					flatStepCount: Math.max(statusPayload.steps.length, 1),
 					outputFile: path.join(asyncDir, `output-${fi}.log`),
-					piPackageRoot: config.piPackageRoot,
-					piArgv1: config.piArgv1,
+					oaPackageRoot: config.oaPackageRoot,
+					oaArgv1: config.oaArgv1,
 					childIntercomTarget: config.childIntercomTargets?.[fi],
 					orchestratorIntercomTarget: config.controlIntercomTarget,
 					nestedRoute: config.nestedRoute,
@@ -2120,8 +2120,8 @@ async function runSubagent(config: SubagentRunConfig): Promise<void> {
 						flatIndex: fi,
 						flatStepCount: flatSteps.length,
 						outputFile: path.join(asyncDir, `output-${fi}.log`),
-						piPackageRoot: config.piPackageRoot,
-						piArgv1: config.piArgv1,
+						oaPackageRoot: config.oaPackageRoot,
+						oaArgv1: config.oaArgv1,
 						childIntercomTarget: config.childIntercomTargets?.[fi],
 						orchestratorIntercomTarget: config.controlIntercomTarget,
 						nestedRoute: config.nestedRoute,
@@ -2310,8 +2310,8 @@ async function runSubagent(config: SubagentRunConfig): Promise<void> {
 				flatIndex,
 				flatStepCount: flatSteps.length,
 				outputFile: path.join(asyncDir, `output-${flatIndex}.log`),
-				piPackageRoot: config.piPackageRoot,
-				piArgv1: config.piArgv1,
+				oaPackageRoot: config.oaPackageRoot,
+				oaArgv1: config.oaArgv1,
 				childIntercomTarget: config.childIntercomTargets?.[flatIndex],
 				orchestratorIntercomTarget: config.controlIntercomTarget,
 				nestedRoute: config.nestedRoute,
@@ -2467,7 +2467,7 @@ async function runSubagent(config: SubagentRunConfig): Promise<void> {
 		if (sessionFile) {
 			try {
 				const exportDir = config.sessionDir ?? path.dirname(sessionFile);
-				const htmlPath = await exportSessionHtml(sessionFile, exportDir, config.piPackageRoot);
+				const htmlPath = await exportSessionHtml(sessionFile, exportDir, config.oaPackageRoot);
 				const share = createShareLink(htmlPath);
 				if ("error" in share) shareError = share.error;
 				else {

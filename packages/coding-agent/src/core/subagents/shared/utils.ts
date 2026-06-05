@@ -181,7 +181,7 @@ export function findLatestSessionFile(sessionDir: string): string | null {
  * Write a prompt to a temporary file
  */
 function _writePrompt(agent: string, prompt: string): { dir: string; path: string } {
-	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pi-subagent-"));
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "oa-subagent-"));
 	const p = path.join(dir, `${agent.replace(/[^\w.-]/g, "_")}.md`);
 	fs.writeFileSync(p, prompt, { mode: 0o600 });
 	return { dir, path: p };

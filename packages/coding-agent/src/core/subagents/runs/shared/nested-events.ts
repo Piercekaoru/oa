@@ -25,7 +25,7 @@ import {
 	SUBAGENT_PARENT_PATH_ENV,
 	SUBAGENT_PARENT_ROOT_RUN_ID_ENV,
 	SUBAGENT_PARENT_RUN_ID_ENV,
-} from "./pi-args.ts";
+} from "./oa-args.ts";
 
 export const NESTED_EVENTS_DIR = path.join(TEMP_ROOT_DIR, "nested-subagent-events");
 const ROUTE_FILE = "route.json";

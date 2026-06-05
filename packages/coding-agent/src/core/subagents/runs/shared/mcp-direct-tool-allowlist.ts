@@ -112,14 +112,14 @@ function loadMcpConfig(cwd: string): McpConfig {
 }
 
 function getConfigPaths(cwd: string): string[] {
-	const piGlobalPath = path.join(getAgentDir(), "mcp.json");
+	const oaGlobalPath = path.join(getAgentDir(), "mcp.json");
 	const projectPath = path.resolve(cwd, ".mcp.json");
-	const projectPiPath = path.resolve(cwd, ".openachieve", "mcp.json");
+	const projectOaPath = path.resolve(cwd, ".openachieve", "mcp.json");
 	const sources: string[] = [];
-	if (GENERIC_GLOBAL_CONFIG_PATH !== piGlobalPath) sources.push(GENERIC_GLOBAL_CONFIG_PATH);
-	sources.push(piGlobalPath);
-	if (projectPath !== piGlobalPath) sources.push(projectPath);
-	if (projectPiPath !== piGlobalPath && projectPiPath !== projectPath) sources.push(projectPiPath);
+	if (GENERIC_GLOBAL_CONFIG_PATH !== oaGlobalPath) sources.push(GENERIC_GLOBAL_CONFIG_PATH);
+	sources.push(oaGlobalPath);
+	if (projectPath !== oaGlobalPath) sources.push(projectPath);
+	if (projectOaPath !== oaGlobalPath && projectOaPath !== projectPath) sources.push(projectOaPath);
 	return sources;
 }
 

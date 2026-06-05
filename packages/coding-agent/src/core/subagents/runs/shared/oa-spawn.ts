@@ -1,37 +1,38 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
+import { APP_COMMAND } from "../../../../config.ts";
 
-export const PI_CODING_AGENT_PACKAGE = "@openachieve/agent";
+export const OA_CODING_AGENT_PACKAGE = "@openachieve/agent";
 
-export function findPiPackageRootFromEntry(entryPoint: string): string | undefined {
+export function findOaPackageRootFromEntry(entryPoint: string): string | undefined {
 	let dir = path.dirname(entryPoint);
 	while (dir !== path.dirname(dir)) {
 		const packageJsonPath = path.join(dir, "package.json");
 		if (fs.existsSync(packageJsonPath)) {
 			const pkg = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8")) as { name?: unknown };
-			if (pkg.name === PI_CODING_AGENT_PACKAGE) return dir;
+			if (pkg.name === OA_CODING_AGENT_PACKAGE) return dir;
 		}
 		dir = path.dirname(dir);
 	}
 	return undefined;
 }
 
-export function resolveInstalledPiPackageRoot(): string | undefined {
-	return findPiPackageRootFromEntry(fileURLToPath(import.meta.url));
+export function resolveInstalledOaPackageRoot(): string | undefined {
+	return findOaPackageRootFromEntry(fileURLToPath(import.meta.url));
 }
 
-export function resolvePiPackageRoot(): string | undefined {
+export function resolveOaPackageRoot(): string | undefined {
 	try {
 		const entry = process.argv[1];
-		return entry ? findPiPackageRootFromEntry(fs.realpathSync(entry)) : undefined;
+		return entry ? findOaPackageRootFromEntry(fs.realpathSync(entry)) : undefined;
 	} catch {
 		// process.argv[1] probing is best-effort; callers can fall back to PATH/package resolution.
 		return undefined;
 	}
 }
 
-export interface PiSpawnDeps {
+export interface OaSpawnDeps {
 	platform?: NodeJS.Platform;
 	execPath?: string;
 	argv1?: string;
@@ -39,10 +40,10 @@ export interface PiSpawnDeps {
 	readFileSync?: (filePath: string, encoding: "utf-8") => string;
 	resolvePackageJson?: () => string;
 	resolvePackageEntry?: () => string;
-	piPackageRoot?: string;
+	oaPackageRoot?: string;
 }
 
-interface PiSpawnCommand {
+interface OaSpawnCommand {
 	command: string;
 	args: string[];
 }
@@ -56,7 +57,7 @@ function normalizePath(filePath: string): string {
 	return path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
 }
 
-export function resolveWindowsPiCliScript(deps: PiSpawnDeps = {}): string | undefined {
+export function resolveOaCliScript(deps: OaSpawnDeps = {}): string | undefined {
 	const existsSync = deps.existsSync ?? fs.existsSync;
 	const readFileSync = deps.readFileSync ?? ((filePath, encoding) => fs.readFileSync(filePath, encoding));
 	const argv1 = deps.argv1 ?? process.argv[1];
@@ -72,12 +73,12 @@ export function resolveWindowsPiCliScript(deps: PiSpawnDeps = {}): string | unde
 		const resolvePackageJson =
 			deps.resolvePackageJson ??
 			(() => {
-				const root = deps.piPackageRoot ?? resolvePiPackageRoot();
+				const root = deps.oaPackageRoot ?? resolveOaPackageRoot();
 				if (root) return path.join(root, "package.json");
 				const packageRoot = deps.resolvePackageEntry
-					? findPiPackageRootFromEntry(deps.resolvePackageEntry())
-					: resolveInstalledPiPackageRoot();
-				if (!packageRoot) throw new Error(`Could not resolve ${PI_CODING_AGENT_PACKAGE} package root`);
+					? findOaPackageRootFromEntry(deps.resolvePackageEntry())
+					: resolveInstalledOaPackageRoot();
+				if (!packageRoot) throw new Error(`Could not resolve ${OA_CODING_AGENT_PACKAGE} package root`);
 				return path.join(packageRoot, "package.json");
 			});
 		const packageJsonPath = resolvePackageJson();
@@ -92,24 +93,24 @@ export function resolveWindowsPiCliScript(deps: PiSpawnDeps = {}): string | unde
 			return candidate;
 		}
 	} catch {
-		// Windows CLI resolution is optional; falling back to `pi` lets PATH handle execution.
+		// CLI script resolution is best-effort; the caller falls back to the configured command name.
 		return undefined;
 	}
 
 	return undefined;
 }
 
-export function getPiSpawnCommand(args: string[], deps: PiSpawnDeps = {}): PiSpawnCommand {
-	const platform = deps.platform ?? process.platform;
-	if (platform === "win32") {
-		const piCliPath = resolveWindowsPiCliScript(deps);
-		if (piCliPath) {
-			return {
-				command: deps.execPath ?? process.execPath,
-				args: [piCliPath, ...args],
-			};
-		}
+export function getOaSpawnCommand(args: string[], deps: OaSpawnDeps = {}): OaSpawnCommand {
+	// Prefer launching the resolved CLI script directly via node on every platform, so
+	// spawning a subagent never depends on a specific command name being present on PATH.
+	const oaCliPath = resolveOaCliScript(deps);
+	if (oaCliPath) {
+		return {
+			command: deps.execPath ?? process.execPath,
+			args: [oaCliPath, ...args],
+		};
 	}
 
-	return { command: "pi", args };
+	// Fall back to the configured CLI command name (e.g. "oa") resolved via PATH.
+	return { command: APP_COMMAND, args };
 }

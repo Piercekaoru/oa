@@ -28,7 +28,7 @@ export function createStructuredOutputRuntime(schema: JsonSchemaObject, baseDir?
 	assertJsonSchemaObject(schema);
 	const rootDir = baseDir ?? os.tmpdir();
 	fs.mkdirSync(rootDir, { recursive: true });
-	const dir = fs.mkdtempSync(path.join(rootDir, "pi-subagent-structured-"));
+	const dir = fs.mkdtempSync(path.join(rootDir, "oa-subagent-structured-"));
 	const schemaPath = path.join(dir, "schema.json");
 	const outputPath = path.join(dir, "output.json");
 	fs.writeFileSync(schemaPath, JSON.stringify(schema), { mode: 0o600 });

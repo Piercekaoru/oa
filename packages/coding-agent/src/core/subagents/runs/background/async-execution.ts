@@ -48,9 +48,9 @@ import {
 	resolveNestedParentAddressFromEnv,
 	writeNestedEvent,
 } from "../shared/nested-events.ts";
+import { applyThinkingSuffix } from "../shared/oa-args.ts";
+import { resolveOaPackageRoot } from "../shared/oa-spawn.ts";
 import type { RunnerStep } from "../shared/parallel-utils.ts";
-import { applyThinkingSuffix } from "../shared/pi-args.ts";
-import { resolvePiPackageRoot } from "../shared/pi-spawn.ts";
 import {
 	injectSingleOutputInstruction,
 	normalizeSingleOutputOverride,
@@ -62,7 +62,7 @@ import { buildWorkflowGraphSnapshot } from "../shared/workflow-graph.ts";
 import { resolveExpectedWorktreeAgentCwd } from "../shared/worktree.ts";
 
 const require = createRequire(import.meta.url);
-const piPackageRoot = resolvePiPackageRoot();
+const oaPackageRoot = resolveOaPackageRoot();
 
 function resolveJitiCliFromPackageJson(packageJsonPath: string): string | undefined {
 	if (!fs.existsSync(packageJsonPath)) return undefined;
@@ -84,15 +84,15 @@ function resolveJitiCliPath(): string | undefined {
 	const candidates: Array<() => string | undefined> = [
 		() => require.resolve("jiti/package.json"),
 		() =>
-			piPackageRoot
-				? createRequire(path.join(piPackageRoot, "package.json")).resolve("jiti/package.json")
+			oaPackageRoot
+				? createRequire(path.join(oaPackageRoot, "package.json")).resolve("jiti/package.json")
 				: undefined,
 		() => {
 			if (!process.argv[1]) return undefined;
-			const piEntry = fs.realpathSync(process.argv[1]);
-			return createRequire(piEntry).resolve("jiti/package.json");
+			const oaEntry = fs.realpathSync(process.argv[1]);
+			return createRequire(oaEntry).resolve("jiti/package.json");
 		},
-		() => (piPackageRoot ? path.join(piPackageRoot, "node_modules", "jiti", "package.json") : undefined),
+		() => (oaPackageRoot ? path.join(oaPackageRoot, "node_modules", "jiti", "package.json") : undefined),
 	];
 	for (const candidate of candidates) {
 		try {
@@ -214,7 +214,8 @@ function spawnRunner(cfg: object, suffix: string, cwd: string): { pid?: number; 
 	fs.mkdirSync(TEMP_ROOT_DIR, { recursive: true });
 	const cfgPath = getAsyncConfigPath(suffix);
 	fs.writeFileSync(cfgPath, JSON.stringify(cfg));
-	const runner = path.join(path.dirname(fileURLToPath(import.meta.url)), "subagent-runner.ts");
+	const runnerExt = import.meta.url.endsWith(".ts") ? ".ts" : ".js";
+	const runner = path.join(path.dirname(fileURLToPath(import.meta.url)), `subagent-runner${runnerExt}`);
 
 	const proc = spawn(process.execPath, [jitiCliPath, runner, cfgPath], {
 		cwd,
@@ -557,8 +558,8 @@ export function executeAsyncChain(id: string, params: AsyncChainParams): AsyncEx
 				sessionDir: sessionRoot ? path.join(sessionRoot, `async-${id}`) : undefined,
 				asyncDir,
 				sessionId: ctx.currentSessionId,
-				piPackageRoot,
-				piArgv1: process.argv[1],
+				oaPackageRoot,
+				oaArgv1: process.argv[1],
 				worktreeSetupHook,
 				worktreeSetupHookTimeoutMs,
 				controlConfig,
@@ -810,8 +811,8 @@ export function executeAsyncSingle(id: string, params: AsyncSingleParams): Async
 				sessionDir: sessionRoot ? path.join(sessionRoot, `async-${id}`) : undefined,
 				asyncDir,
 				sessionId: ctx.currentSessionId,
-				piPackageRoot,
-				piArgv1: process.argv[1],
+				oaPackageRoot,
+				oaArgv1: process.argv[1],
 				worktreeSetupHook,
 				worktreeSetupHookTimeoutMs,
 				controlConfig,

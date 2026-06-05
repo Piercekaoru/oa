@@ -51,8 +51,8 @@ import {
 	summarizeRecentMutatingFailures,
 } from "../shared/long-running-guard.ts";
 import { buildModelCandidates, formatModelAttemptNote, isRetryableModelFailure } from "../shared/model-fallback.ts";
-import { applyThinkingSuffix, buildPiArgs, cleanupTempDir } from "../shared/pi-args.ts";
-import { getPiSpawnCommand } from "../shared/pi-spawn.ts";
+import { applyThinkingSuffix, buildOaArgs, cleanupTempDir } from "../shared/oa-args.ts";
+import { getOaSpawnCommand } from "../shared/oa-spawn.ts";
 import {
 	captureSingleOutputSnapshot,
 	formatSavedOutputReference,
@@ -163,7 +163,7 @@ async function runSingleAttempt(
 		args,
 		env: sharedEnv,
 		tempDir,
-	} = buildPiArgs({
+	} = buildOaArgs({
 		baseArgs: ["--mode", "json", "-p"],
 		task,
 		sessionEnabled: shared.sessionEnabled,
@@ -242,7 +242,7 @@ async function runSingleAttempt(
 	let observedMutationAttempt = false;
 
 	const exitCode = await new Promise<number>((resolve) => {
-		const spawnSpec = getPiSpawnCommand(args);
+		const spawnSpec = getOaSpawnCommand(args);
 		const proc = spawn(spawnSpec.command, spawnSpec.args, {
 			cwd: options.cwd ?? runtimeCwd,
 			env: spawnEnv,

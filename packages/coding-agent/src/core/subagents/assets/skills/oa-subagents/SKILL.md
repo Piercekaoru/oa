@@ -8,7 +8,7 @@ description: |
   planning, or execution.
 ---
 
-# Pi Subagents
+# OA Subagents
 
 This skill is for the main parent orchestrator only. Do not inject or follow it inside spawned child subagents. The parent session owns delegation, orchestration, review fanout, and final fix-worker launches; child subagents should receive concrete role-specific tasks. Ordinary children should not run their own subagent workflows; the explicit exception is a delegated fanout child whose resolved builtin `tools` includes `subagent`, and that child may use `subagent` only for the fanout work the parent assigned.
 
@@ -159,7 +159,7 @@ and user/project agents override builtins with the same name.
 | `delegate` | Lightweight generic delegate | inherits default | No fixed output; generic delegated work |
 | `oracle` | Decision-consistency advisory review | inherits default | Advisory review, intercom coordination |
 
-Builtin agents inherit the current Pi default model unless a run, user setting, or project setting overrides `model`. Override builtin defaults before copying full agent files when a small tweak is enough.
+Builtin agents inherit the current Openachieve Agent default model unless a run, user setting, or project setting overrides `model`. Override builtin defaults before copying full agent files when a small tweak is enough.
 
 For one run, use inline config:
 
@@ -171,7 +171,7 @@ For persistent tweaks, edit `subagents.agentOverrides` in user or project settin
 
 ## Prompting role subagents
 
-Builtin role agents inherit the current Pi default model unless you override them. When launching them, write the task prompt as a compact contract, not a long procedural script. Define the destination and let the role choose the efficient path.
+Builtin role agents inherit the current Openachieve Agent default model unless you override them. When launching them, write the task prompt as a compact contract, not a long procedural script. Define the destination and let the role choose the efficient path.
 
 A strong subagent prompt usually includes:
 - **Goal**: the concrete outcome the child should produce.
@@ -306,7 +306,7 @@ Prefer async mode for every subagent launch. Set `async: true` no matter the tas
 
 Async does not mean parallel writes. Do not edit the same active worktree while an async worker is changing it. Parent-side overlap should be reading, validation prep, synthesis, command planning, or review of unaffected context unless the writer is isolated in a separate worktree.
 
-Do not end your turn immediately after launching an async child if you promised to keep working. Continue the local inspection, synthesis, or validation prep, then check the async run when its result is needed. If there is no independent work left and you would only be running `sleep` or status polling commands to wait, end your turn instead. Pi will deliver the async completion when it arrives.
+Do not end your turn immediately after launching an async child if you promised to keep working. Continue the local inspection, synthesis, or validation prep, then check the async run when its result is needed. If there is no independent work left and you would only be running `sleep` or status polling commands to wait, end your turn instead. Openachieve Agent will deliver the async completion when it arrives.
 
 ```typescript
 subagent({

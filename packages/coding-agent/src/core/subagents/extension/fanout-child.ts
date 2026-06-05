@@ -11,7 +11,7 @@ import {
 	resolveNestedRouteFromEnv,
 	writeNestedControlResult,
 } from "../runs/shared/nested-events.ts";
-import { SUBAGENT_CHILD_ENV, SUBAGENT_FANOUT_CHILD_ENV } from "../runs/shared/pi-args.ts";
+import { SUBAGENT_CHILD_ENV, SUBAGENT_FANOUT_CHILD_ENV } from "../runs/shared/oa-args.ts";
 import { getArtifactsDir } from "../shared/artifacts.ts";
 import type { Details, SubagentState } from "../shared/types.ts";
 import { loadConfig } from "./config.ts";
@@ -23,7 +23,7 @@ function getSubagentSessionRoot(parentSessionFile: string | null): string {
 		const sessionsDir = path.dirname(parentSessionFile);
 		return path.join(sessionsDir, baseName);
 	}
-	return fs.mkdtempSync(path.join(os.tmpdir(), "pi-subagent-session-"));
+	return fs.mkdtempSync(path.join(os.tmpdir(), "oa-subagent-session-"));
 }
 
 function expandTilde(p: string): string {
