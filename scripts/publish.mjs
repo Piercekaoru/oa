@@ -110,6 +110,12 @@ for (const pkg of packages) {
 		continue;
 	}
 
-	run("npm", ["publish", "--access", "public", "--provenance", "--ignore-scripts"], { cwd: pkg.directory });
+	const publishArgs = ["publish", "--access", "public", "--ignore-scripts"];
+	// --provenance requires a CI OIDC environment (e.g. GitHub Actions);
+	// omit it for local publishing so `npm publish` works with a token.
+	if (process.env.CI) {
+		publishArgs.push("--provenance");
+	}
+	run("npm", publishArgs, { cwd: pkg.directory });
 	console.log();
 }
