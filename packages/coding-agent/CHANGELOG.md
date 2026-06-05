@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Native subagents** - Delegate work to built-in subagents directly from the coding agent, with foreground and background execution, an intercom channel for streaming subagent activity, TUI rendering of subagent runs, slash commands, and agent management. Ships built-in agent templates (oracle, planner, researcher, reviewer, scout, worker, delegate, and context-builder) registered through the default resource loader, and adds a `requestRender` hook to `ExtensionUIContext` so extensions can request a TUI redraw on subagent events.
+
 ## [0.78.1] - 2026-06-05
 
 ### Added
