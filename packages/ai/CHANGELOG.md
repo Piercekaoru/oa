@@ -2,18 +2,26 @@
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- Renamed the npm package, CLI helper, and import path to `@openachieve/ai`; legacy package aliases are no longer supported.
+
 ### Added
 
 - Added Ant Ling as a built-in OpenAI-compatible provider with Ling 2.6 and Ring 2.6 models.
 - Added MiniMax-M3 model to the `minimax` and `minimax-cn` direct providers, and removed the hardcoded context-window override that was masking models.dev values ([#5313](https://github.com/earendil-works/pi/issues/5313)).
 - Added NVIDIA NIM as a built-in OpenAI-compatible provider, exposing public NIM models that support tool use.
+- Added ZAI Coding Plan China as a built-in OpenAI-compatible provider ([#5333](https://github.com/earendil-works/pi-mono/pull/5333) by [@vastxie](https://github.com/vastxie)).
 
 ### Fixed
 
 - Fixed Amazon Bedrock requests to replace blank required user/tool-result text with a placeholder and skip blank replay text blocks ([#4975](https://github.com/earendil-works/pi/issues/4975)).
+- Fixed Anthropic Claude Opus 4.7+ requests to suppress deprecated temperature parameters when model metadata disallows them ([#5251](https://github.com/earendil-works/pi-mono/pull/5251) by [@yzhg1983](https://github.com/yzhg1983)).
+- Fixed OAuth browser launch handling for OpenAI Codex and GitHub Copilot logins in headless or unsupported environments.
 - Fixed OpenAI GPT-5.5 generated metadata to omit unsupported minimal thinking ([#5243](https://github.com/earendil-works/pi/issues/5243)).
 - Fixed OpenRouter Kimi K2.6 thinking replay and preserved developer-role instructions for OpenRouter OpenAI and Anthropic models ([#5309](https://github.com/earendil-works/pi/issues/5309)).
 - Fixed GitHub Copilot and OpenRouter test model references that became stale after model regeneration.
+- Fixed stale OpenAI Codex generated model metadata by removing obsolete overrides ([#5346](https://github.com/earendil-works/pi-mono/pull/5346) by [@mattiacerutti](https://github.com/mattiacerutti)).
 
 ## [0.78.0] - 2026-05-29
 

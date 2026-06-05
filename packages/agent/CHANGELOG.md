@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- Renamed the npm package and import path to `@openachieve/agent-core`; legacy package aliases are no longer supported.
+
 ## [0.78.0] - 2026-05-29
 
 ## [0.77.0] - 2026-05-28

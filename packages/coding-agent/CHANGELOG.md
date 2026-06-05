@@ -2,17 +2,40 @@
 
 ## [Unreleased]
 
+### New Features
+
+- **Openachieve Agent rebrand** - Renames the user-facing CLI to `oa`, packages to `@openachieve/*`, and default config locations to `.openachieve` and `~/.openachieve/agent`.
+- **Provider expansion** - Adds NVIDIA NIM, ZAI Coding Plan China, and Ant Ling provider setup.
+- **Extension runtime context** - Exposes `ctx.mode` and `ctx.getSystemPromptOptions()` to extensions. See [Extensions](docs/extensions.md).
+- **Containerized tool routing** - Adds [Containerization](docs/containerization.md) and the Gondolin extension example for routing built-in tools into a local micro-VM.
+
+### Breaking Changes
+
+- Renamed the CLI command, npm package, package manifest, config directories, and environment prefix to Openachieve defaults: `oa`, `@openachieve/agent`, `openachieve`, `.openachieve`, and `OPENACHIEVE_*`.
+- Removed legacy runtime package aliases, legacy `package.json.pi` discovery, and the legacy `pi-package` discoverability keyword.
+
 ### Added
 
-- Added containerization documentation and a Gondolin extension example for routing built-in tools into a local micro-VM.
+- Added containerization documentation and a Gondolin extension example for routing built-in tools into a local micro-VM ([#5356](https://github.com/earendil-works/pi-mono/pull/5356) by [@vegarsti](https://github.com/vegarsti)).
 - Added Ant Ling provider selection and setup documentation.
 - Added NVIDIA NIM provider selection, setup documentation, and direct NIM request attribution headers.
+- Added ZAI Coding Plan China provider selection and setup documentation ([#5333](https://github.com/earendil-works/pi-mono/pull/5333) by [@vastxie](https://github.com/vastxie)).
 - Added `ctx.mode` to extension contexts so extensions can distinguish TUI, RPC, JSON, and print mode.
-- Added `ctx.getSystemPromptOptions()` for extension commands to inspect the current base system prompt inputs.
+- Added `ctx.getSystemPromptOptions()` for extension commands to inspect the current base system prompt inputs ([#5306](https://github.com/earendil-works/pi-mono/pull/5306) by [@xl0](https://github.com/xl0)).
+
+### Changed
+
+- Disabled upstream `pi.dev` defaults for update checks, install telemetry, and share viewer links unless Openachieve service URLs are configured.
 
 ### Fixed
 
+- Fixed Anthropic Claude Opus 4.7+ requests to suppress deprecated temperature parameters when model metadata disallows them ([#5251](https://github.com/earendil-works/pi-mono/pull/5251) by [@yzhg1983](https://github.com/yzhg1983)).
+- Fixed auth file creation to set restrictive file permissions immediately.
+- Fixed branch display refresh for repositories under WSL `/mnt` paths ([#5264](https://github.com/earendil-works/pi-mono/pull/5264) by [@psoukie](https://github.com/psoukie)).
+- Fixed OAuth browser launch handling so headless or unsupported environments fall back cleanly.
 - Fixed temporary extension package installs to use a private `~/.openachieve/agent/tmp/extensions` directory with `0700` permissions instead of `os.tmpdir()/openachieve-extensions`.
+- Fixed TUI overlay focus restoration so extension custom UI overlays remain interactive across replacement and explicit focus changes ([#5235](https://github.com/earendil-works/pi-mono/pull/5235) by [@nicobailon](https://github.com/nicobailon)).
+- Fixed TUI tab width accounting so tab-containing output cannot exceed the terminal width ([#5218](https://github.com/earendil-works/pi/issues/5218)).
 - Fixed git package source handling to reject unsafe host/path components and keep managed clone paths inside install roots.
 - Fixed stored XSS in HTML session exports by sanitizing Markdown link and image URLs with a scheme allow-list after stripping control characters.
 - Fixed SDK embedding in bundled Node apps failing with `ENOENT` when `package.json` is not present next to the bundle entrypoint. The package metadata reader now gracefully handles missing `package.json` by using defaults, enabling `createAgentSession()` without requiring package-adjacent files at runtime ([#5226](https://github.com/earendil-works/pi/issues/5226)).

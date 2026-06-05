@@ -18,6 +18,11 @@ import { SettingsManager } from "./settings-manager.ts";
 import type { Skill } from "./skills.ts";
 import { loadSkills } from "./skills.ts";
 import { createSourceInfo, type SourceInfo } from "./source-info.ts";
+import {
+	BUILTIN_SUBAGENT_PROMPTS_DIR,
+	BUILTIN_SUBAGENT_SKILL_FILE,
+	registerSubagentExtension,
+} from "./subagents/index.ts";
 
 export interface ResourceExtensionPaths {
 	skillPaths?: Array<{ path: string; metadata: PathMetadata }>;
@@ -214,10 +219,13 @@ export class DefaultResourceLoader implements ResourceLoader {
 			settingsManager: this.settingsManager,
 		});
 		this.additionalExtensionPaths = options.additionalExtensionPaths ?? [];
-		this.additionalSkillPaths = options.additionalSkillPaths ?? [];
-		this.additionalPromptTemplatePaths = options.additionalPromptTemplatePaths ?? [];
+		this.additionalSkillPaths = [BUILTIN_SUBAGENT_SKILL_FILE, ...(options.additionalSkillPaths ?? [])];
+		this.additionalPromptTemplatePaths = [
+			BUILTIN_SUBAGENT_PROMPTS_DIR,
+			...(options.additionalPromptTemplatePaths ?? []),
+		];
 		this.additionalThemePaths = options.additionalThemePaths ?? [];
-		this.extensionFactories = options.extensionFactories ?? [];
+		this.extensionFactories = [registerSubagentExtension, ...(options.extensionFactories ?? [])];
 		this.noExtensions = options.noExtensions ?? false;
 		this.noSkills = options.noSkills ?? false;
 		this.noPromptTemplates = options.noPromptTemplates ?? false;
