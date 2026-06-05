@@ -14,6 +14,7 @@
 - Fixed OpenAI GPT-5.5 generated metadata to omit unsupported minimal thinking ([#5243](https://github.com/earendil-works/pi/issues/5243)).
 - Fixed OpenRouter Kimi K2.6 thinking replay and preserved developer-role instructions for OpenRouter OpenAI and Anthropic models ([#5309](https://github.com/earendil-works/pi/issues/5309)).
 - Fixed GitHub Copilot and OpenRouter test model references that became stale after model regeneration.
+- Removed stale OpenAI Codex model variants that were no longer available.
 
 ## [0.78.0] - 2026-05-29
 

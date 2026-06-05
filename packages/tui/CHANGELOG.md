@@ -5,6 +5,7 @@
 ### Fixed
 
 - Fixed tab width accounting in column slicing and overlay compositing so tab-containing output cannot exceed the terminal width ([#5218](https://github.com/earendil-works/pi/issues/5218)).
+- Fixed overlay focus restoration to correctly target the previously focused component after an overlay is hidden.
 
 ## [0.78.0] - 2026-05-29
 
