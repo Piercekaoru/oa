@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed native subagents failing to launch from a global install. The subagent child-process spawn command and runtime extension paths were hardcoded (to a `pi` command that does not exist when only the `oa` CLI is installed, and to `.ts` source paths absent from the compiled package), so launching any subagent failed with `Extension path does not exist`. Subagents now spawn via the resolved CLI script (falling back to the configured command) and resolve runtime modules with the extension matching the running build.
+- Fixed subagents identifying themselves with upstream branding instead of Openachieve Agent.
+
 ## [0.79.0] - 2026-06-05
 
 ### Added
