@@ -194,10 +194,17 @@ stageChangedFiles();
 run(`git commit -m "Add [Unreleased] section for next cycle"`);
 console.log();
 
-// 9. Push
-console.log("Pushing to remote...");
-run("git push origin main");
-run(`git push origin v${version}`);
+// 9. Push (skip with --no-push for the local-publish workflow:
+//    bump + tag here, run `npm run publish` locally, then push so CI
+//    only builds binaries and skips the already-published npm step)
+if (process.argv.includes("--no-push")) {
+	console.log("Skipping push (--no-push). After publishing to npm, run:");
+	console.log(`  git push oa main && git push oa v${version}`);
+} else {
+	console.log("Pushing to remote 'oa'...");
+	run("git push oa main");
+	run(`git push oa v${version}`);
+}
 console.log();
 
 console.log(`=== Prepared release v${version}; CI publishing starts after the tag push ===`);
