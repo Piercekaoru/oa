@@ -926,7 +926,10 @@ async function loadModelsDevData(): Promise<Model<any>[]> {
 				if (!m.modalities?.input?.includes("text")) continue;
 				if (!m.modalities?.output?.includes("text")) continue;
 
-				const liveModelId = nvidiaNimModelIds.get(modelId) ?? nvidiaNimModelIds.get(normalizeNvidiaModelId(modelId));
+				const liveModelId =
+					nvidiaNimModelIds.get(modelId) ??
+					nvidiaNimModelIds.get(normalizeNvidiaModelId(modelId)) ??
+					(nvidiaNimModelIds.size === 0 ? modelId : undefined);
 				if (!liveModelId) continue;
 				if (NVIDIA_NIM_UNSUPPORTED_MODELS.has(liveModelId)) continue;
 
