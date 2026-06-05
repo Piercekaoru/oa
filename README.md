@@ -1,57 +1,201 @@
-# Openachieve Agent Mono Repo
+# Openachieve Agent
 
-This is the home of Openachieve Agent, a self-extensible coding agent CLI and supporting runtime packages.
+Openachieve Agent is a terminal-first coding agent CLI.
 
-* **[@openachieve/agent](packages/coding-agent)**: Interactive coding agent CLI
-* **[@openachieve/agent-core](packages/agent)**: Agent runtime with tool calling and state management
-* **[@openachieve/ai](packages/ai)**: Unified multi-provider LLM API (OpenAI, Anthropic, Google, ...)
+It is built as a TypeScript monorepo around four packages: the CLI, the agent runtime, the unified AI provider layer, and the terminal UI package.
 
-## All Packages
+The CLI is published on npm as `@openachieve/agent` and exposes the `oa` command.
 
-| Package | Description |
-|---------|-------------|
-| **[@openachieve/ai](packages/ai)** | Unified multi-provider LLM API (OpenAI, Anthropic, Google, etc.) |
-| **[@openachieve/agent-core](packages/agent)** | Agent runtime with tool calling and state management |
-| **[@openachieve/agent](packages/coding-agent)** | Interactive coding agent CLI, exposed as `oa` |
-| **[@openachieve/tui](packages/tui)** | Terminal UI library with differential rendering |
+---
 
-## Permissions & Containerization
+## Install
 
-Openachieve Agent does not include a built-in permission system for restricting filesystem, process, network, or credential access. By default, it runs with the permissions of the user and process that launched it.
+```bash
+npm install -g --ignore-scripts @openachieve/agent
+```
 
-If you need stronger boundaries, containerize or sandbox Openachieve Agent. See [packages/coding-agent/docs/containerization.md](packages/coding-agent/docs/containerization.md) for three patterns:
+Start the CLI:
 
-- **OpenShell**: run the whole `oa` process in a policy-controlled sandbox.
-- **Gondolin extension**: keep `oa` and provider auth on the host while routing built-in tools and `!` commands into a local Linux micro-VM.
-- **Plain Docker**: run the whole `oa` process in a local container for simple isolation.
+```bash
+oa
+```
 
-## Contributing
+`--ignore-scripts` is recommended for safer npm installs.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [AGENTS.md](AGENTS.md) for project-specific rules (for both humans and agents).
+---
+
+## Requirements
+
+```bash
+node >= 22.19.0
+```
+
+Check your local version:
+
+```bash
+node -v
+```
+
+---
+
+## Quick Start
+
+Open a project and run OA:
+
+```bash
+cd your-project
+oa
+```
+
+Then ask it to help with your codebase:
+
+```text
+Explain this repository.
+```
+
+```text
+Find the bug in this feature and suggest a fix.
+```
+
+```text
+Refactor this module without changing the public API.
+```
+
+```text
+Run the tests and help me understand the failures.
+```
+
+---
+
+## Packages
+
+| Package | Purpose |
+| --- | --- |
+| [`@openachieve/agent`](packages/coding-agent) | Interactive coding agent CLI. This package exposes the `oa` command. |
+| [`@openachieve/agent-core`](packages/agent) | Agent runtime with tool calling and state management. |
+| [`@openachieve/ai`](packages/ai) | Unified multi-provider LLM API. |
+| [`@openachieve/tui`](packages/tui) | Terminal UI library with differential rendering. |
+
+Install the CLI globally:
+
+```bash
+npm install -g --ignore-scripts @openachieve/agent
+```
+
+Install the libraries directly:
+
+```bash
+npm install @openachieve/ai
+npm install @openachieve/agent-core
+npm install @openachieve/tui
+```
+
+---
 
 ## Development
 
+Clone the repository:
+
 ```bash
-npm install --ignore-scripts  # Install all dependencies without running lifecycle scripts
-npm run build        # Build all packages
-npm run check        # Lint, format, and type check
-./test.sh            # Run tests (skips LLM-dependent tests without API keys)
-./oa-test.sh         # Run oa from sources (can be run from any directory)
+git clone https://github.com/Piercekaoru/oa.git
+cd oa
 ```
 
-## Supply-chain hardening
+Install dependencies:
 
-We treat npm dependency changes as reviewed code changes.
+```bash
+npm install --ignore-scripts
+```
 
-- Direct external dependencies are pinned to exact versions. Internal workspace packages remain version-ranged.
-- `.npmrc` sets `save-exact=true` and `min-release-age=2` to avoid same-day dependency releases during npm resolution.
-- `package-lock.json` is the dependency ground truth. Pre-commit blocks accidental lockfile commits unless `OPENACHIEVE_ALLOW_LOCKFILE_CHANGE=1` is set.
-- `npm run check` verifies pinned direct deps, native TypeScript import compatibility, and the generated coding-agent shrinkwrap.
-- The published CLI package includes `packages/coding-agent/npm-shrinkwrap.json`, generated from the root lockfile, to pin transitive deps for npm users.
-- Release smoke tests use `npm run release:local` to build, pack, and create isolated npm and Bun installs outside the repo before tagging a release.
-- Local release installs, documented npm installs, and `oa update --self` use `--ignore-scripts` where supported.
-- CI installs with `npm ci --ignore-scripts`, and a scheduled GitHub workflow runs `npm audit --omit=dev` plus `npm audit signatures --omit=dev`.
-- Shrinkwrap generation has an explicit allowlist for dependency lifecycle scripts; new lifecycle-script deps fail checks until reviewed.
+Build all packages:
+
+```bash
+npm run build
+```
+
+Run checks:
+
+```bash
+npm run check
+```
+
+Run tests:
+
+```bash
+./test.sh
+```
+
+Run OA from source:
+
+```bash
+./oa-test.sh
+```
+
+---
+
+## Contributing
+
+PRs are welcome.
+
+Good contributions include:
+
+- fixing bugs
+- improving docs
+- adding examples
+- improving provider support
+- improving error messages
+- testing OA on more platforms
+- simplifying confusing code
+
+Before submitting a PR, read [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`AGENTS.md`](AGENTS.md).
+
+Then run:
+
+```bash
+npm run check
+./test.sh
+```
+
+Both should pass.
+
+Keep PRs focused. A small clean PR is easier to review and easier to merge.
+
+If your change is useful, thoughtful, and aligned with the project, send the PR. I will review it and merge it.
+
+---
+
+## Safety
+
+OA runs with the permissions of the process that starts it.
+
+For stronger isolation, run OA inside a container or sandbox.
+
+See [`packages/coding-agent/docs/containerization.md`](packages/coding-agent/docs/containerization.md) for containerization patterns.
+
+---
+
+## Supply Chain
+
+This repository treats dependency changes as code changes.
+
+Important details:
+
+- npm installs use `--ignore-scripts` where possible.
+- Direct external dependencies are pinned.
+- `package-lock.json` is the dependency source of truth.
+- The published CLI includes a shrinkwrap file for transitive dependency pinning.
+
+---
+
+## Philosophy
+
+A coding agent should not feel like a locked room.
+
+It should feel like a door.
+
+Open it. Inspect it. Improve it. Send a PR.
+
+---
 
 ## License
 
