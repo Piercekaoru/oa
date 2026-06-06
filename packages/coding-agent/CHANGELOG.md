@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- The update-available notification now suggests `oa update --self` (instead of `oa update`), pointing users directly at updating Openachieve Agent itself. Extension-update notifications continue to use `oa update`.
+
 ## [0.79.2] - 2026-06-06
 
 ### Breaking Changes
