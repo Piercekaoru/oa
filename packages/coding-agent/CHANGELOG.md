@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- Enabled native tool permissions by default. Read-only file tools are allowed, write/edit/bash ask for confirmation, sensitive credential paths are denied, and non-interactive `ask` decisions block with a permission error. Set `permission["*"]` to `"allow"` to opt back into permissive defaults, or use the new `--permission-mode <ask|allow|bypass>` flag (or `OPENACHIEVE_PERMISSION_MODE` env var) for a per-invocation override: `allow` skips prompts but still enforces credential `deny`, `bypass` skips all checks. Native subagents spawn with `--permission-mode allow` so they keep working non-interactively while credential paths stay denied.
+
 ## [0.79.1] - 2026-06-05
 
 ### Fixed

@@ -16,6 +16,7 @@ import { listModels } from "./cli/list-models.ts";
 import { selectSession } from "./cli/session-picker.ts";
 import {
 	ENV_OFFLINE,
+	ENV_PERMISSION_MODE,
 	ENV_SESSION_DIR,
 	ENV_SKIP_VERSION_CHECK,
 	ENV_STARTUP_BENCHMARK,
@@ -438,6 +439,14 @@ function buildSessionOptions(
 		options.excludeTools = [...parsed.excludeTools];
 	}
 
+	// Permission mode: CLI flag > env var > default ("ask")
+	const envPermissionMode = process.env[ENV_PERMISSION_MODE];
+	if (parsed.permissionMode) {
+		options.permissionMode = parsed.permissionMode;
+	} else if (envPermissionMode === "ask" || envPermissionMode === "allow" || envPermissionMode === "bypass") {
+		options.permissionMode = envPermissionMode;
+	}
+
 	return { options, cliThinkingFromModel, diagnostics };
 }
 
@@ -669,6 +678,7 @@ export async function main(args: string[], options?: MainOptions) {
 			excludeTools: sessionOptions.excludeTools,
 			noTools: sessionOptions.noTools,
 			customTools: sessionOptions.customTools,
+			permissionMode: sessionOptions.permissionMode,
 		});
 		const cliThinkingOverride = parsed.thinking !== undefined || cliThinkingFromModel;
 		if (created.session.model && cliThinkingOverride) {

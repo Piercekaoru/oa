@@ -5,6 +5,7 @@ import lockfile from "proper-lockfile";
 import { CONFIG_DIR_NAME, ENV_CLEAR_ON_SHRINK, ENV_HARDWARE_CURSOR, getAgentDir } from "../config.ts";
 import { normalizePath, resolvePath } from "../utils/paths.ts";
 import { DEFAULT_HTTP_IDLE_TIMEOUT_MS, parseHttpIdleTimeoutMs } from "./http-dispatcher.ts";
+import { mergePermissionConfig, normalizePermissionConfig, type PermissionConfig } from "./permission-system.ts";
 
 export interface CompactionSettings {
 	enabled?: boolean; // default: true
@@ -110,6 +111,7 @@ export interface Settings {
 	showHardwareCursor?: boolean; // Show terminal cursor while still positioning it for IME
 	markdown?: MarkdownSettings;
 	warnings?: WarningSettings;
+	permission?: PermissionConfig;
 	sessionDir?: string; // Custom session storage directory (same format as --session-dir CLI flag)
 	httpIdleTimeoutMs?: number; // HTTP header/body idle timeout in milliseconds; 0 disables it
 	websocketConnectTimeoutMs?: number; // WebSocket connect/open handshake timeout in milliseconds; 0 disables it
@@ -124,6 +126,11 @@ function deepMergeSettings(base: Settings, overrides: Settings): Settings {
 		const baseValue = base[key];
 
 		if (overrideValue === undefined) {
+			continue;
+		}
+
+		if (key === "permission") {
+			result.permission = mergePermissionConfig(base.permission, overrides.permission);
 			continue;
 		}
 
@@ -403,6 +410,13 @@ export class SettingsManager {
 				};
 			}
 			delete retrySettings.maxDelayMs;
+		}
+
+		const normalizedPermission = normalizePermissionConfig(settings.permission);
+		if (normalizedPermission) {
+			settings.permission = normalizedPermission;
+		} else {
+			delete settings.permission;
 		}
 
 		return settings as Settings;
@@ -1087,5 +1101,9 @@ export class SettingsManager {
 		this.globalSettings.warnings = { ...warnings };
 		this.markModified("warnings");
 		this.save();
+	}
+
+	getPermissionConfig(): PermissionConfig | undefined {
+		return this.settings.permission ? structuredClone(this.settings.permission) : undefined;
 	}
 }

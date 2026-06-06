@@ -710,6 +710,7 @@ async function runSingleStep(
 			sessionDir,
 			sessionFile: step.sessionFile,
 			model: candidate,
+			permissionMode: "allow",
 			inheritProjectContext: step.inheritProjectContext,
 			inheritSkills: step.inheritSkills,
 			tools: step.tools,

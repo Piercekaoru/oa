@@ -74,6 +74,13 @@ import {
 import { emitSessionShutdownEvent } from "./extensions/runner.ts";
 import type { BashExecutionMessage, CustomMessage } from "./messages.ts";
 import type { ModelRegistry } from "./model-registry.ts";
+import {
+	formatPermissionPrompt,
+	formatPermissionReason,
+	type PermissionCheckResult,
+	PermissionManager,
+	type PermissionMode,
+} from "./permission-system.ts";
 import { expandPromptTemplate, type PromptTemplate } from "./prompt-templates.ts";
 import type { ResourceExtensionPaths, ResourceLoader } from "./resource-loader.ts";
 import type { BranchSummaryEntry, CompactionEntry, SessionManager } from "./session-manager.ts";
@@ -177,6 +184,8 @@ export interface AgentSessionConfig {
 	extensionRunnerRef?: { current?: ExtensionRunner };
 	/** Session start event metadata emitted when extensions bind to this runtime. */
 	sessionStartEvent?: SessionStartEvent;
+	/** Process-level permission override (from --permission-mode / env). Default: "ask". */
+	permissionMode?: PermissionMode;
 }
 
 export interface ExtensionBindings {
@@ -310,6 +319,7 @@ export class AgentSession {
 	private _toolDefinitions: Map<string, ToolDefinitionEntry> = new Map();
 	private _toolPromptSnippets: Map<string, string> = new Map();
 	private _toolPromptGuidelines: Map<string, string[]> = new Map();
+	private _permissionManager: PermissionManager;
 
 	// Base system prompt (without extension appends) - used to apply fresh appends each turn
 	private _baseSystemPrompt = "";
@@ -330,6 +340,11 @@ export class AgentSession {
 		this._excludedToolNames = config.excludedToolNames ? new Set(config.excludedToolNames) : undefined;
 		this._baseToolsOverride = config.baseToolsOverride;
 		this._sessionStartEvent = config.sessionStartEvent ?? { type: "session_start", reason: "startup" };
+		this._permissionManager = new PermissionManager(
+			this._cwd,
+			() => this.settingsManager.getPermissionConfig(),
+			config.permissionMode,
+		);
 
 		// Always subscribe to agent events for internal handling
 		// (session persistence, extensions, auto-compaction, retry logic)
@@ -395,6 +410,11 @@ export class AgentSession {
 	 */
 	private _installAgentToolHooks(): void {
 		this.agent.beforeToolCall = async ({ toolCall, args }) => {
+			const permissionResult = await this._checkToolPermission(toolCall.name, args);
+			if (permissionResult?.block) {
+				return permissionResult;
+			}
+
 			const runner = this._extensionRunner;
 			if (!runner.hasHandlers("tool_call")) {
 				return undefined;
@@ -441,6 +461,52 @@ export class AgentSession {
 				isError: hookResult.isError ?? isError,
 			};
 		};
+	}
+
+	private async _checkToolPermission(
+		toolName: string,
+		args: unknown,
+	): Promise<{ block?: boolean; reason?: string } | undefined> {
+		const result = this._permissionManager.resolve(toolName, args);
+		if (result.state === "allow") {
+			return undefined;
+		}
+		if (result.state === "deny") {
+			return { block: true, reason: formatPermissionReason(result) };
+		}
+		if (!this._extensionUIContext?.confirm) {
+			return {
+				block: true,
+				reason: `Permission requires confirmation, but no interactive permission UI is available: ${formatPermissionReason(result)}`,
+			};
+		}
+
+		const approved = await this._promptForPermission(result);
+		if (approved) {
+			return undefined;
+		}
+		return { block: true, reason: `Permission denied by user: ${formatPermissionReason(result)}` };
+	}
+
+	private async _promptForPermission(result: PermissionCheckResult): Promise<boolean> {
+		const choices = this._permissionManager.getPromptChoices(result);
+		if (this._extensionUIContext?.select && choices.length > 1) {
+			const selection = await this._extensionUIContext.select("Permission required", [
+				...choices.map((choice) => choice.label),
+				"Deny",
+			]);
+			const choice = choices.find((candidate) => candidate.label === selection);
+			if (!choice) {
+				return false;
+			}
+			if (choice.approval) {
+				this._permissionManager.addSessionApproval(choice.approval.surface, choice.approval.pattern);
+			}
+			return true;
+		}
+
+		const approved = await this._extensionUIContext?.confirm("Permission required", formatPermissionPrompt(result));
+		return approved === true;
 	}
 
 	// =========================================================================
@@ -2277,8 +2343,12 @@ export class AgentSession {
 		const previousActiveToolNames = this.getActiveToolNames();
 		const allowedToolNames = this._allowedToolNames;
 		const excludedToolNames = this._excludedToolNames;
-		const isAllowedTool = (name: string): boolean =>
-			(!allowedToolNames || allowedToolNames.has(name)) && !excludedToolNames?.has(name);
+		const isAllowedTool = (name: string): boolean => {
+			if ((allowedToolNames && !allowedToolNames.has(name)) || excludedToolNames?.has(name)) {
+				return false;
+			}
+			return this._permissionManager.shouldExposeTool(name);
+		};
 
 		const registeredTools = this._extensionRunner.getAllRegisteredTools();
 		const allCustomTools = [

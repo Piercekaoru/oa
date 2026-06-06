@@ -47,6 +47,7 @@ interface BuildOaArgsInput {
 	sessionFile?: string;
 	model?: string;
 	thinking?: string;
+	permissionMode?: "ask" | "allow" | "bypass";
 	systemPromptMode?: "append" | "replace";
 	inheritProjectContext: boolean;
 	inheritSkills: boolean;
@@ -108,6 +109,12 @@ export function buildOaArgs(input: BuildOaArgsInput): BuildOaArgsResult {
 	const modelArg = applyThinkingSuffix(input.model, input.thinking);
 	if (modelArg) {
 		args.push("--model", modelArg);
+	}
+
+	// Subagent children run in non-interactive print mode (no confirm UI), so callers pass
+	// permissionMode (typically "allow") to keep write/edit/bash working while deny still applies.
+	if (input.permissionMode) {
+		args.push("--permission-mode", input.permissionMode);
 	}
 
 	const declaredBuiltinTools =

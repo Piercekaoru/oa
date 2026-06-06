@@ -74,4 +74,13 @@ export {
 	type TurnStartEvent,
 	type WorkingIndicatorOptions,
 } from "./extensions/index.ts";
+export type {
+	PermissionCheckResult,
+	PermissionConfig,
+	PermissionMode,
+	PermissionPatternMap,
+	PermissionPromptChoice,
+	PermissionRule,
+	PermissionState,
+} from "./permission-system.ts";
 export { createSyntheticSourceInfo } from "./source-info.ts";

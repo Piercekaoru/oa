@@ -150,6 +150,7 @@ See [Openachieve Agent Packages](packages.md) for package sources and security n
 | `-p`, `--print` | Print response and exit |
 | `--mode json` | Output all events as JSON lines; see [JSON mode](json.md) |
 | `--mode rpc` | RPC mode over stdin/stdout; see [RPC mode](rpc.md) |
+| `--permission-mode <mode>` | Tool permission policy: `ask` (default), `allow` (skip prompts but keep deny), `bypass` (allow all) |
 | `--export <in> [out]` | Export a session to HTML |
 
 In print mode, Openachieve Agent also reads piped stdin and merges it into the initial prompt:

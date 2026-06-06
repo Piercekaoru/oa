@@ -17,6 +17,7 @@ import {
 	ENV_TELEMETRY,
 } from "../config.ts";
 import type { ExtensionFlag } from "../core/extensions/types.ts";
+import type { PermissionMode } from "../core/permission-system.ts";
 
 export type Mode = "text" | "json" | "rpc";
 
@@ -32,6 +33,7 @@ export interface Args {
 	help?: boolean;
 	version?: boolean;
 	mode?: Mode;
+	permissionMode?: PermissionMode;
 	name?: string;
 	noSession?: boolean;
 	session?: string;
@@ -154,6 +156,16 @@ export function parseArgs(args: string[]): Args {
 				result.messages.push(next);
 				i++;
 			}
+		} else if (arg === "--permission-mode" && i + 1 < args.length) {
+			const value = args[++i];
+			if (value === "ask" || value === "allow" || value === "bypass") {
+				result.permissionMode = value;
+			} else {
+				result.diagnostics.push({
+					type: "warning",
+					message: `Invalid permission mode "${value}". Valid values: ask, allow, bypass`,
+				});
+			}
 		} else if (arg === "--export" && i + 1 < args.length) {
 			result.export = args[++i];
 		} else if ((arg === "--extension" || arg === "-e") && i + 1 < args.length) {
@@ -248,6 +260,7 @@ ${chalk.bold("Options:")}
   --append-system-prompt <text>  Append text or file contents to the system prompt (can be used multiple times)
   --mode <mode>                  Output mode: text (default), json, or rpc
   --print, -p                    Non-interactive mode: process prompt and exit
+  --permission-mode <mode>       Tool permission policy: ask (default), allow (skip prompts but keep deny), bypass (allow everything)
   --continue, -c                 Continue previous session
   --resume, -r                   Select a session to resume
   --session <path|id>            Use specific session file or partial UUID

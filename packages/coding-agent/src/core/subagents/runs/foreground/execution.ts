@@ -171,6 +171,7 @@ async function runSingleAttempt(
 		sessionFile: options.sessionFile,
 		model,
 		thinking: agent.thinking,
+		permissionMode: "allow",
 		systemPromptMode: agent.systemPromptMode,
 		inheritProjectContext: agent.inheritProjectContext,
 		inheritSkills: agent.inheritSkills,

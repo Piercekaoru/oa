@@ -159,6 +159,54 @@ Keep `retry.provider.maxRetries` at `0` unless provider-level retries are explic
 
 `npmCommand` is used for all npm package-manager operations, including installs, uninstalls, and dependency installs inside git packages. User-scoped npm packages install under `~/.openachieve/agent/npm/`; project-scoped npm packages install under `.openachieve/npm/`. Use argv-style entries exactly as the process should be launched. When `npmCommand` is configured, git package dependency installs use plain `install` to avoid npm-specific flags in wrappers or alternate package managers.
 
+### Permissions
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `permission` | object | Built-in safe defaults | Native tool permission policy. |
+
+Permission states are `"allow"`, `"ask"`, and `"deny"`. Openachieve Agent ships with built-in defaults: read-only file tools are allowed, write/edit/bash ask for confirmation, sensitive credential paths are denied, and external directory access asks for confirmation. User settings override the built-in policy; set `permission["*"]` to `"allow"` to opt into permissive defaults.
+
+```json
+{
+  "permission": {
+    "*": "allow",
+    "path": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+    "external_directory": "ask",
+    "bash": {
+      "*": "ask",
+      "git status": "allow",
+      "git diff": "allow",
+      "rm -rf *": "deny"
+    },
+    "read": "allow",
+    "write": "ask",
+    "edit": "ask"
+  }
+}
+```
+
+Each surface can be a state string or a pattern map. Patterns use `*` for any characters and `?` for one character; later matching patterns win within the same surface. For bash, command chains split on `&&`, `||`, `;`, `|`, `&`, and newlines outside quotes, then the most restrictive decision wins: `deny` over `ask` over `allow`. Command substitutions, backticks, and subshells are checked too. A pattern ending in ` *`, such as `"git *"`, also matches the bare command.
+
+`path` applies before tool-specific rules and can block file access from `read`, `write`, `edit`, `grep`, `find`, `ls`, and bash path-like arguments. `external_directory` applies when a file tool or bash path candidate resolves outside the current working directory. Tool-specific path maps match the tool input path; object-valued tool policies still expose the tool and enforce specific targets at call time, while a string `"deny"` hides the tool. In non-interactive print mode, `ask` blocks with a clear permission error because there is no confirmation UI.
+
+#### Permission mode (non-interactive escape hatch)
+
+Non-interactive contexts (print mode `-p`, `--mode json`, CI) have no confirmation UI, so an `ask` decision blocks. The `--permission-mode` flag — or the `OPENACHIEVE_PERMISSION_MODE` environment variable — overrides this for the whole process:
+
+- `ask` (default): use the resolved policy as-is (interactive prompts; non-interactive `ask` blocks).
+- `allow`: treat `ask` as `allow` while **still honoring `deny`** — credential paths (`.env`, `~/.ssh/*`, `*.pem`, `*.key`, `id_rsa`, …) stay protected. Use this for trusted CI/scripts that need to write files and run commands without per-tool config.
+- `bypass`: skip permissions entirely, **including `deny`**. Only for fully trusted sandboxes.
+
+Precedence is CLI flag > env var > default. **Native subagents always spawn with `--permission-mode allow`** because their child processes run non-interactively; this lets subagents write/edit/run bash while credential paths remain denied.
+
+> Note: bash path-based `deny` is best-effort static analysis. Shell features — variable expansion (`$HOME/.ssh/id_rsa`), quote splicing (`.e''nv`), spaces in quoted filenames — can evade path matching. The bash surface itself (default `ask`) is the backstop, so setting `bash` to `"allow"` weakens credential-path protection for bash commands.
+
 ### Sessions
 
 | Setting | Type | Default | Description |
