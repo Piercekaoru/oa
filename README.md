@@ -1,12 +1,8 @@
-# Openachieve Agent Mono Repo
+# Openachieve Agent
 
-This is the home of Openachieve Agent, a self-extensible coding agent CLI and supporting runtime packages.
+Openachieve Agent is a self-extensible coding agent CLI and supporting runtime packages. Install the CLI to run `oa` in a project, then extend it with TypeScript extensions, skills, prompt templates, themes, and Openachieve packages.
 
-* **[@openachieve/agent](packages/coding-agent)**: Interactive coding agent CLI
-* **[@openachieve/agent-core](packages/agent)**: Agent runtime with tool calling and state management
-* **[@openachieve/ai](packages/ai)**: Unified multi-provider LLM API (OpenAI, Anthropic, Google, ...)
-
-## All Packages
+## Packages
 
 | Package | Description |
 |---------|-------------|
@@ -14,6 +10,62 @@ This is the home of Openachieve Agent, a self-extensible coding agent CLI and su
 | **[@openachieve/agent-core](packages/agent)** | Agent runtime with tool calling and state management |
 | **[@openachieve/agent](packages/coding-agent)** | Interactive coding agent CLI, exposed as `oa` |
 | **[@openachieve/tui](packages/tui)** | Terminal UI library with differential rendering |
+
+## Install
+
+Requires Node.js 22.19.0 or newer.
+
+```bash
+npm install -g --ignore-scripts @openachieve/agent
+```
+
+`--ignore-scripts` disables dependency lifecycle scripts during install. Openachieve Agent does not require install scripts for normal npm installs.
+
+## First run
+
+Start `oa` in the project directory you want it to work on:
+
+```bash
+cd /path/to/project
+oa
+```
+
+Then type a request and press Enter. By default, Openachieve Agent gives the model four tools: `read`, `write`, `edit`, and `bash`.
+
+For one-shot prompts:
+
+```bash
+oa -p "Summarize this codebase"
+cat README.md | oa -p "Summarize this text"
+```
+
+## Authentication
+
+Use `/login` for subscription providers:
+
+```text
+/login
+```
+
+Built-in subscription logins include Claude Pro/Max, ChatGPT Plus/Pro (Codex), and GitHub Copilot.
+
+Or set an API key before launching `oa`:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+oa
+```
+
+See [packages/coding-agent/docs/providers.md](packages/coding-agent/docs/providers.md) for all supported providers.
+
+## Documentation
+
+- [Quickstart](packages/coding-agent/docs/quickstart.md) - install, authenticate, and run a first session.
+- [Using Openachieve Agent](packages/coding-agent/docs/usage.md) - interactive mode, slash commands, sessions, context files, and CLI reference.
+- [Settings](packages/coding-agent/docs/settings.md) - global and project configuration.
+- [Openachieve packages](packages/coding-agent/docs/packages.md) - install shared extensions, skills, prompts, and themes.
+- [CONTRIBUTING.md](CONTRIBUTING.md) - contribution guidelines.
+- [AGENTS.md](AGENTS.md) - project-specific rules for humans and agents.
 
 ## Permissions & Containerization
 
@@ -25,11 +77,7 @@ If you need stronger boundaries, containerize or sandbox Openachieve Agent. See 
 - **Gondolin extension**: keep `oa` and provider auth on the host while routing built-in tools and `!` commands into a local Linux micro-VM.
 - **Plain Docker**: run the whole `oa` process in a local container for simple isolation.
 
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [AGENTS.md](AGENTS.md) for project-specific rules (for both humans and agents).
-
-## Development
+## Development from source
 
 ```bash
 npm install --ignore-scripts  # Install all dependencies without running lifecycle scripts
