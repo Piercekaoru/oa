@@ -1,106 +1,178 @@
 # Openachieve Agent
 
-Openachieve Agent is a self-extensible coding agent CLI and supporting runtime packages. Install the CLI to run `oa` in a project, then extend it with TypeScript extensions, skills, prompt templates, themes, and Openachieve packages.
+Openachieve Agent は、拡張可能なコーディングエージェント CLI とランタイムパッケージのセットです。プロジェクトで `oa` CLI をインストールし、TypeScript 拡張、スキル、プロンプトテンプレート、テーマ、Openachieve パッケージで機能を拡張できます。
 
-## Packages
+## 主な機能
 
-| Package | Description |
+- **対話型コーディングエージェント** - 自然言語でコード編集、デバッグ、プロジェクトナビゲーション
+- **マルチプロバイダー LLM サポート** - OpenAI、Anthropic、Google、AWS Bedrock など統一 API
+- **サブエージェントシステム** - 並列・逐次実行する専門エージェントへの作業委譲
+  - `/view-agent` で実行中のサブエージェントのライブ対話表示
+  - `/agents` コマンドでエージェント一覧と詳細検査
+  - 組み込みエージェントタイプ：scout（高速偵察）、planner（実装計画）、worker（実装作業）、reviewer（レビュー修正）、context-builder（要件引き継ぎ）、researcher（Web 調査）、oracle（意思決定支援）、delegate（汎用）
+- **ターミナル UI** - ファイル補完、画像ペースト、複数行編集などリッチな対話インターフェース
+- **拡張可能なアーキテクチャ** - TypeScript でカスタムスキル、プロンプトテンプレート、テーマ、拡張機能を追加
+
+## パッケージ構成
+
+| パッケージ | 説明 |
 |---------|-------------|
-| **[@openachieve/ai](packages/ai)** | Unified multi-provider LLM API (OpenAI, Anthropic, Google, etc.) |
-| **[@openachieve/agent-core](packages/agent)** | Agent runtime with tool calling and state management |
-| **[@openachieve/agent](packages/coding-agent)** | Interactive coding agent CLI, exposed as `oa` |
-| **[@openachieve/tui](packages/tui)** | Terminal UI library with differential rendering |
+| **[@openachieve/ai](packages/ai)** | 統一マルチプロバイダー LLM API（OpenAI、Anthropic、Google など） |
+| **[@openachieve/agent-core](packages/agent)** | ツール呼び出しと状態管理を備えたエージェントランタイム |
+| **[@openachieve/agent](packages/coding-agent)** | `oa` として公開される対話型コーディングエージェント CLI |
+| **[@openachieve/tui](packages/tui)** | 差分レンダリング機能付きターミナル UI ライブラリ |
 
-## Install
+## インストール
 
-Requires Node.js 22.19.0 or newer.
+Node.js 22.19.0 以降が必要です。
 
 ```bash
 npm install -g --ignore-scripts @openachieve/agent
 ```
 
-`--ignore-scripts` disables dependency lifecycle scripts during install. Openachieve Agent does not require install scripts for normal npm installs.
+`--ignore-scripts` は依存関係のライフサイクルスクリプトを無効化します。Openachieve Agent は通常の npm インストールではインストールスクリプトを必要としません。
 
-## First run
+## 初回起動
 
-Start `oa` in the project directory you want it to work on:
+作業したいプロジェクトディレクトリで `oa` を起動します：
 
 ```bash
 cd /path/to/project
 oa
 ```
 
-Then type a request and press Enter. By default, Openachieve Agent gives the model four tools: `read`, `write`, `edit`, and `bash`.
+リクエストを入力して Enter を押します。デフォルトでは、Openachieve Agent はモデルに 4 つのツールを提供します：`read`、`write`、`edit`、`bash`。
 
-For one-shot prompts:
+ワンショットプロンプトの場合：
 
 ```bash
-oa -p "Summarize this codebase"
-cat README.md | oa -p "Summarize this text"
+oa -p "このコードベースを要約して"
+cat README.md | oa -p "このテキストを要約して"
 ```
 
-## Authentication
+## クイックコマンドリファレンス
 
-Use `/login` for subscription providers:
+### 対話コマンド
+
+| コマンド | 説明 |
+|---------|-------------|
+| `@ファイル名` | ファイル参照（`@` でファジー検索） |
+| `!コマンド` | シェルコマンドを実行し出力をエージェントに送信 |
+| `/model` | 使用可能なモデル間で切り替え |
+| `/settings` | 思考レベル、テーマなどを設定 |
+| `/session` | セッション情報、トークン、コストを表示 |
+| `/export` | セッションを HTML にエクスポート |
+| `/login` | サブスクリプションプロバイダーにログイン |
+| `/resume` | 前回のセッションから再開 |
+| `/new` | 新しいセッションを開始 |
+
+### サブエージェントコマンド
+
+専門エージェントに作業を委譲：
+
+```bash
+/agents                           # 利用可能なエージェントタイプの一覧
+/agents scout                     # scout エージェントの設定を表示
+/agents --scope=builtin           # 組み込みエージェントのみフィルター
+/run scout "認証周りを分析"        # scout エージェントを実行
+/view-agent                       # 実行中のサブエージェント一覧を表示
+/view-agent <runId>               # 特定のサブエージェントのライブ対話を表示
+/parallel worker "機能A" -> worker "機能B"  # 並列実行
+```
+
+**組み込みエージェントタイプ**：
+- **scout**（高速偵察）- コードベースの迅速な調査と情報収集
+- **planner**（実装計画）- 実装戦略の設計と計画立案
+- **worker**（実装作業）- 実際のコード実装
+- **reviewer**（レビュー修正）- コードレビューと修正提案
+- **context-builder**（要件引き継ぎ）- 要件の整理と引き継ぎ
+- **researcher**（Web 調査）- Web 検索と情報調査
+- **oracle**（意思決定支援）- 技術的意思決定のアドバイス
+- **delegate**（汎用）- 汎用的なタスク実行
+
+実行コマンドに `--bg` を追加するとバックグラウンドで実行（例：`/run scout "認証を分析" --bg`）。`--fork` を追加すると現在のセッションコンテキストから分岐。
+
+詳しくは [usage.md](packages/coding-agent/docs/usage.md) を参照してください。
+
+## 認証
+
+サブスクリプションプロバイダーの場合は `/login` を使用：
 
 ```text
 /login
 ```
 
-Built-in subscription logins include Claude Pro/Max, ChatGPT Plus/Pro (Codex), and GitHub Copilot.
+組み込みサブスクリプションログインには Claude Pro/Max、ChatGPT Plus/Pro (Codex)、GitHub Copilot が含まれます。
 
-Or set an API key before launching `oa`:
+または `oa` 起動前に API キーを設定：
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
 oa
 ```
 
-See [packages/coding-agent/docs/providers.md](packages/coding-agent/docs/providers.md) for all supported providers.
+サポートされている全プロバイダーについては [packages/coding-agent/docs/providers.md](packages/coding-agent/docs/providers.md) を参照してください。
 
-## Documentation
+## ドキュメント
 
-- [Quickstart](packages/coding-agent/docs/quickstart.md) - install, authenticate, and run a first session.
-- [Using Openachieve Agent](packages/coding-agent/docs/usage.md) - interactive mode, slash commands, sessions, context files, and CLI reference.
-- [Settings](packages/coding-agent/docs/settings.md) - global and project configuration.
-- [Openachieve packages](packages/coding-agent/docs/packages.md) - install shared extensions, skills, prompts, and themes.
-- [CONTRIBUTING.md](CONTRIBUTING.md) - contribution guidelines.
-- [AGENTS.md](AGENTS.md) - project-specific rules for humans and agents.
+- [クイックスタート](packages/coding-agent/docs/quickstart.md) - インストール、認証、初回セッションの実行
+- [Openachieve Agent の使い方](packages/coding-agent/docs/usage.md) - 対話モード、スラッシュコマンド、サブエージェントシステム、セッション、コンテキストファイル、CLI リファレンス
+- [設定](packages/coding-agent/docs/settings.md) - グローバルおよびプロジェクト設定
+- [Openachieve パッケージ](packages/coding-agent/docs/packages.md) - 共有拡張、スキル、プロンプト、テーマのインストール
+- [コンテナ化](packages/coding-agent/docs/containerization.md) - より強力なセキュリティ境界のためのサンドボックス環境での実行
+- [CONTRIBUTING.md](CONTRIBUTING.md) - 貢献ガイドライン
+- [AGENTS.md](AGENTS.md) - 人間とエージェント向けのプロジェクト固有ルール
 
-## Permissions & Containerization
+## パーミッションとコンテナ化
 
-Openachieve Agent does not include a built-in permission system for restricting filesystem, process, network, or credential access. By default, it runs with the permissions of the user and process that launched it.
+Openachieve Agent には、ファイルシステム、プロセス、ネットワーク、または認証情報アクセスを制限する組み込みパーミッションシステムは含まれていません。デフォルトでは、起動したユーザーとプロセスのパーミッションで実行されます。
 
-If you need stronger boundaries, containerize or sandbox Openachieve Agent. See [packages/coding-agent/docs/containerization.md](packages/coding-agent/docs/containerization.md) for three patterns:
+より強力な境界が必要な場合は、Openachieve Agent をコンテナ化またはサンドボックス化してください。3 つのパターンについては [packages/coding-agent/docs/containerization.md](packages/coding-agent/docs/containerization.md) を参照してください：
 
-- **OpenShell**: run the whole `oa` process in a policy-controlled sandbox.
-- **Gondolin extension**: keep `oa` and provider auth on the host while routing built-in tools and `!` commands into a local Linux micro-VM.
-- **Plain Docker**: run the whole `oa` process in a local container for simple isolation.
+- **OpenShell**：`oa` プロセス全体をポリシー制御されたサンドボックスで実行
+- **Gondolin 拡張**：`oa` とプロバイダー認証をホストに保持しつつ、組み込みツールと `!` コマンドをローカル Linux マイクロ VM にルーティング
+- **Plain Docker**：`oa` プロセス全体をローカルコンテナで実行してシンプルな分離を実現
 
-## Development from source
+## ソースからの開発
 
 ```bash
-npm install --ignore-scripts  # Install all dependencies without running lifecycle scripts
-npm run build        # Build all packages
-npm run check        # Lint, format, and type check
-./test.sh            # Run tests (skips LLM-dependent tests without API keys)
-./oa-test.sh         # Run oa from sources (can be run from any directory)
+npm install --ignore-scripts  # ライフサイクルスクリプトなしですべての依存関係をインストール
+npm run build                 # すべてのパッケージをビルド
+npm run check                 # リント、フォーマット、型チェック
+./test.sh                     # テストを実行（API キーなしでは LLM 依存テストをスキップ）
+./oa-test.sh                  # ソースから oa を実行（任意のディレクトリから実行可能）
 ```
 
-## Supply-chain hardening
+## サプライチェーン強化
 
-We treat npm dependency changes as reviewed code changes.
+npm 依存関係の変更をレビュー済みコード変更として扱います。
 
-- Direct external dependencies are pinned to exact versions. Internal workspace packages remain version-ranged.
-- `.npmrc` sets `save-exact=true` and `min-release-age=2` to avoid same-day dependency releases during npm resolution.
-- `package-lock.json` is the dependency ground truth. Pre-commit blocks accidental lockfile commits unless `OPENACHIEVE_ALLOW_LOCKFILE_CHANGE=1` is set.
-- `npm run check` verifies pinned direct deps, native TypeScript import compatibility, and the generated coding-agent shrinkwrap.
-- The published CLI package includes `packages/coding-agent/npm-shrinkwrap.json`, generated from the root lockfile, to pin transitive deps for npm users.
-- Release smoke tests use `npm run release:local` to build, pack, and create isolated npm and Bun installs outside the repo before tagging a release.
-- Local release installs, documented npm installs, and `oa update --self` use `--ignore-scripts` where supported.
-- CI installs with `npm ci --ignore-scripts`, and a scheduled GitHub workflow runs `npm audit --omit=dev` plus `npm audit signatures --omit=dev`.
-- Shrinkwrap generation has an explicit allowlist for dependency lifecycle scripts; new lifecycle-script deps fail checks until reviewed.
+- 直接の外部依存関係は正確なバージョンに固定。内部ワークスペースパッケージはバージョン範囲のまま
+- `.npmrc` は `save-exact=true` と `min-release-age=2` を設定し、npm 解決中の同日依存関係リリースを回避
+- `package-lock.json` が依存関係の信頼できる情報源。プリコミットは `OPENACHIEVE_ALLOW_LOCKFILE_CHANGE=1` が設定されていない限り、誤ったロックファイルコミットをブロック
+- `npm run check` は固定された直接依存関係、ネイティブ TypeScript インポート互換性、生成された coding-agent shrinkwrap を検証
+- 公開される CLI パッケージには `packages/coding-agent/npm-shrinkwrap.json` が含まれ、ルートロックファイルから生成され、npm ユーザー向けに推移的依存関係を固定
+- リリーススモークテストは `npm run release:local` を使用してビルド、パック、リリースタグ付け前にリポジトリ外で分離された npm および Bun インストールを作成
+- ローカルリリースインストール、文書化された npm インストール、`oa update --self` はサポートされている場所で `--ignore-scripts` を使用
+- CI は `npm ci --ignore-scripts` でインストールし、スケジュールされた GitHub ワークフローは `npm audit --omit=dev` と `npm audit signatures --omit=dev` を実行
+- Shrinkwrap 生成には依存関係ライフサイクルスクリプトの明示的な許可リストがあり、新しいライフサイクルスクリプト依存関係はレビューされるまでチェックに失敗
 
-## License
+## 最新リリース
+
+**バージョン 0.79.4**（2026-06-08）
+
+### 新機能
+- `/view-agent` コマンドによる実行中サブエージェントのライブ対話表示
+- セッションファイル（.jsonl）パーサーによるメッセージ、ツール呼び出し、thinking ブロックの抽出
+- TUI 対話ビューアーコンポーネント（自動フォロー、手動スクロール、カラー表示）
+- `/agents` コマンドでのエージェント一覧と詳細検査機能の強化
+
+### 修正
+- `packages/ai/src/models.ts` の TypeScript 型推論エラーを修正
+- `TProvider extends KnownProvider` から `TProvider extends keyof typeof MODELS` への変更により、より厳密な型安全性を実現
+
+詳細は [CHANGELOG.md](packages/coding-agent/CHANGELOG.md) を参照してください。
+
+## ライセンス
 
 MIT
