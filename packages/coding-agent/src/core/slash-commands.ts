@@ -42,5 +42,6 @@ export const BUILTIN_SLASH_COMMANDS: ReadonlyArray<BuiltinSlashCommand> = [
 	{ name: "chain", description: "Run agents in sequence" },
 	{ name: "parallel", description: "Run agents in parallel" },
 	{ name: "run-chain", description: "Run a saved chain" },
+	{ name: "view-agent", description: "View live conversation for a running subagent" },
 	{ name: "subagents-doctor", description: "Show subagent diagnostics" },
 ];

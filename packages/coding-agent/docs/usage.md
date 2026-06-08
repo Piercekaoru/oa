@@ -68,6 +68,7 @@ Openachieve Agent includes a powerful subagent system for delegating work to spe
 | `/chain <agent1> "task1" -> <agent2>` | Run agents in sequence (pipeline) |
 | `/parallel <agent1> "task1" -> <agent2> "task2"` | Run agents in parallel |
 | `/run-chain <chainName> -- <task>` | Run a saved chain workflow |
+| `/view-agent [runId]` | View live conversation for a running subagent |
 | `/subagents-doctor` | Show diagnostics for subagent setup |
 
 Add `--bg` to any execution command to run in the background (e.g., `/run scout "analyze auth" --bg`). Add `--fork` to branch from the current session context instead of starting fresh.
