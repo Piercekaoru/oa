@@ -55,6 +55,27 @@ Type `/` in the editor to open command completion. Extensions can register custo
 | `/changelog` | Display version history |
 | `/quit` | Quit Openachieve Agent |
 
+### Subagent Commands
+
+Openachieve Agent includes a powerful subagent system for delegating work to specialized agents that run in parallel or sequence. The model can automatically invoke subagents when appropriate, and you can also manually trigger them with slash commands.
+
+| Command | Description |
+|---------|-------------|
+| `/agents` | List all available agent types (builtin, user, project) |
+| `/agents <name>` | Show detailed configuration for a specific agent |
+| `/agents --scope=<scope>` | Filter agents by scope (builtin, user, or project) |
+| `/run <agent> [task]` | Run a single subagent directly |
+| `/chain <agent1> "task1" -> <agent2>` | Run agents in sequence (pipeline) |
+| `/parallel <agent1> "task1" -> <agent2> "task2"` | Run agents in parallel |
+| `/run-chain <chainName> -- <task>` | Run a saved chain workflow |
+| `/subagents-doctor` | Show diagnostics for subagent setup |
+
+Add `--bg` to any execution command to run in the background (e.g., `/run scout "analyze auth" --bg`). Add `--fork` to branch from the current session context instead of starting fresh.
+
+**Built-in agents**: scout (fast recon), planner (implementation plans), worker (implementation), reviewer (review and fix), context-builder (requirement handoffs), researcher (web research), delegate (generic), oracle (decision advisory).
+
+See the subagents skill documentation for advanced usage patterns like chains, parallel execution, dynamic fanout, and acceptance contracts.
+
 ## Message Queue
 
 You can submit messages while the agent is still working:

@@ -37,4 +37,10 @@ export const BUILTIN_SLASH_COMMANDS: ReadonlyArray<BuiltinSlashCommand> = [
 	{ name: "resume", description: "Resume a different session" },
 	{ name: "reload", description: "Reload keybindings, extensions, skills, prompts, and themes" },
 	{ name: "quit", description: `Quit ${APP_NAME}` },
+	{ name: "agents", description: "List and inspect subagents" },
+	{ name: "run", description: "Run a subagent directly" },
+	{ name: "chain", description: "Run agents in sequence" },
+	{ name: "parallel", description: "Run agents in parallel" },
+	{ name: "run-chain", description: "Run a saved chain" },
+	{ name: "subagents-doctor", description: "Show subagent diagnostics" },
 ];

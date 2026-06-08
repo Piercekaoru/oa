@@ -4,6 +4,7 @@ import * as path from "node:path";
 import { type ChainConfig, discoverAgents, discoverAgentsAll } from "../agents/agents.ts";
 import type { ExtensionAPI, ExtensionContext } from "../compat/coding-agent.ts";
 import { Key, matchesKey } from "../compat/tui.ts";
+import { registerAgentsCommand } from "./agents-command.ts";
 import type { SubagentParamsLike } from "../runs/foreground/subagent-executor.ts";
 import { assertJsonSchemaObject } from "../runs/shared/structured-output.ts";
 import { type ChainStep, isDynamicParallelStep, isParallelStep } from "../shared/settings.ts";
@@ -598,4 +599,10 @@ export function registerSlashCommands(pi: ExtensionAPI, state: SubagentState): v
 			await runSlashSubagent(pi, ctx, { action: "doctor" });
 		},
 	});
+
+	// Register /agents command
+	registerAgentsCommand(
+		(name, options) => pi.registerCommand(name, options),
+		() => state.baseCwd,
+	);
 }
