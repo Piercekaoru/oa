@@ -4,8 +4,8 @@
  */
 
 import type { Component } from "@openachieve/tui";
-import { Container, Key, matchesKey, Spacer, Text, truncateToWidth } from "@openachieve/tui";
-import { parseSessionFile, type ParsedMessage } from "./session-parser.ts";
+import { Key, matchesKey, truncateToWidth } from "@openachieve/tui";
+import { type ParsedMessage, parseSessionFile } from "./session-parser.ts";
 
 interface ConversationViewerOptions {
 	sessionFile: string;
@@ -180,23 +180,23 @@ export class ConversationViewer implements Component {
 		lines.push(this.theme.fg("accent", `╭${headerText}${"─".repeat(headerPadding)}╮`));
 
 		if (this.loadError) {
-			lines.push(this.theme.fg("accent", "│" + " ".repeat(bodyWidth) + "│"));
+			lines.push(this.theme.fg("accent", `│${" ".repeat(bodyWidth)}│`));
 			lines.push(
 				this.theme.fg(
 					"accent",
 					`│${this.theme.fg("error", truncateToWidth(` Error: ${this.loadError}`, bodyWidth))}${" ".repeat(Math.max(0, bodyWidth - ` Error: ${this.loadError}`.length))}│`,
 				),
 			);
-			lines.push(this.theme.fg("accent", "│" + " ".repeat(bodyWidth) + "│"));
+			lines.push(this.theme.fg("accent", `│${" ".repeat(bodyWidth)}│`));
 		} else if (this.messages.length === 0) {
-			lines.push(this.theme.fg("accent", "│" + " ".repeat(bodyWidth) + "│"));
+			lines.push(this.theme.fg("accent", `│${" ".repeat(bodyWidth)}│`));
 			lines.push(
 				this.theme.fg(
 					"accent",
 					`│${this.theme.fg("dim", truncateToWidth(" (no messages yet)", bodyWidth))}${" ".repeat(Math.max(0, bodyWidth - " (no messages yet)".length))}│`,
 				),
 			);
-			lines.push(this.theme.fg("accent", "│" + " ".repeat(bodyWidth) + "│"));
+			lines.push(this.theme.fg("accent", `│${" ".repeat(bodyWidth)}│`));
 		} else {
 			// Render messages with scroll
 			const contentLines = this.renderMessages(bodyWidth);
@@ -211,7 +211,7 @@ export class ConversationViewer implements Component {
 			// Fill remaining space
 			const remainingLines = viewportHeight - visibleLines.length;
 			for (let i = 0; i < remainingLines; i++) {
-				lines.push(this.theme.fg("accent", "│" + " ".repeat(bodyWidth) + "│"));
+				lines.push(this.theme.fg("accent", `│${" ".repeat(bodyWidth)}│`));
 			}
 		}
 

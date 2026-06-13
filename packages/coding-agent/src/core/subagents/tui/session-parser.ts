@@ -4,7 +4,6 @@
  */
 
 import * as fs from "node:fs";
-import * as path from "node:path";
 import { createInterface } from "node:readline";
 import type { Message } from "../compat/ai.ts";
 
@@ -44,7 +43,9 @@ function extractTextContent(content: unknown): string {
 	if (typeof content === "string") return content;
 	if (Array.isArray(content)) {
 		return content
-			.filter((item): item is { type: "text"; text: string } => item?.type === "text" && typeof item.text === "string")
+			.filter(
+				(item): item is { type: "text"; text: string } => item?.type === "text" && typeof item.text === "string",
+			)
 			.map((item) => item.text)
 			.join("\n");
 	}
@@ -54,7 +55,8 @@ function extractTextContent(content: unknown): string {
 function extractThinking(content: unknown): string | undefined {
 	if (!Array.isArray(content)) return undefined;
 	const thinkingBlock = content.find(
-		(item): item is { type: "thinking"; thinking: string } => item?.type === "thinking" && typeof item.thinking === "string",
+		(item): item is { type: "thinking"; thinking: string } =>
+			item?.type === "thinking" && typeof item.thinking === "string",
 	);
 	return thinkingBlock?.thinking;
 }

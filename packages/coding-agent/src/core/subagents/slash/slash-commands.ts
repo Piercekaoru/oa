@@ -4,8 +4,6 @@ import * as path from "node:path";
 import { type ChainConfig, discoverAgents, discoverAgentsAll } from "../agents/agents.ts";
 import type { ExtensionAPI, ExtensionContext } from "../compat/coding-agent.ts";
 import { Key, matchesKey } from "../compat/tui.ts";
-import { registerAgentsCommand } from "./agents-command.ts";
-import { registerViewAgentCommand } from "./view-agent-command.ts";
 import type { SubagentParamsLike } from "../runs/foreground/subagent-executor.ts";
 import { assertJsonSchemaObject } from "../runs/shared/structured-output.ts";
 import { type ChainStep, isDynamicParallelStep, isParallelStep } from "../shared/settings.ts";
@@ -20,8 +18,10 @@ import {
 	SLASH_SUBAGENT_UPDATE_EVENT,
 	type SubagentState,
 } from "../shared/types.ts";
+import { registerAgentsCommand } from "./agents-command.ts";
 import type { SlashSubagentResponse, SlashSubagentUpdate } from "./slash-bridge.ts";
 import { applySlashUpdate, buildSlashInitialResult, failSlashResult, finalizeSlashResult } from "./slash-live-state.ts";
+import { registerViewAgentCommand } from "./view-agent-command.ts";
 
 interface InlineConfig {
 	output?: string | false;

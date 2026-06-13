@@ -3,7 +3,7 @@
  */
 
 import type { ExtensionContext } from "../compat/coding-agent.ts";
-import type { AsyncJobState, SubagentState } from "../shared/types.ts";
+import type { SubagentState } from "../shared/types.ts";
 import { ConversationViewer } from "../tui/conversation-viewer.ts";
 
 export function registerViewAgentCommand(
@@ -44,7 +44,10 @@ export function registerViewAgentCommand(
 			if (!args.trim()) {
 				const runningJobs = jobs.filter((j) => j.status === "running" && j.sessionFile);
 				if (runningJobs.length === 0) {
-					ctx.ui.notify("No running subagents found. Use /view-agent <asyncId> to view a specific agent.", "warning");
+					ctx.ui.notify(
+						"No running subagents found. Use /view-agent <asyncId> to view a specific agent.",
+						"warning",
+					);
 					return;
 				}
 
@@ -94,7 +97,7 @@ export function registerViewAgentCommand(
 
 			// Use ctx.ui.custom for overlay support
 			const overlayPromise = ctx.ui.custom(
-				(tui, theme, keybindings, done) => {
+				(_tui, _theme, _keybindings, done) => {
 					// Set up keyboard handler for viewer
 					const container = viewer as any;
 					const originalHandleKey = container.handleKey?.bind(container);

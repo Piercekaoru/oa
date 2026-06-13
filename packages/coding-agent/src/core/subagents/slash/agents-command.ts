@@ -2,7 +2,7 @@
  * /agents command - list and inspect available subagents
  */
 
-import type { AgentConfig, ChainConfig } from "../agents/agents.ts";
+import type { AgentConfig } from "../agents/agents.ts";
 import { discoverAgentsAll } from "../agents/agents.ts";
 import type { ExtensionContext } from "../compat/coding-agent.ts";
 
@@ -38,7 +38,11 @@ function formatAgentList(agents: AgentListEntry[], theme: ExtensionContext["ui"]
 	// Rows
 	const rows = agents.map((agent) => {
 		const scopeIndicator =
-			agent.scope === "builtin" ? theme.fg("dim", "●") : agent.scope === "user" ? theme.fg("accent", "◦") : theme.fg("success", "•");
+			agent.scope === "builtin"
+				? theme.fg("dim", "●")
+				: agent.scope === "user"
+					? theme.fg("accent", "◦")
+					: theme.fg("success", "•");
 		const scopeLabel = `${scopeIndicator} ${agent.scope}`.padEnd(scopeWidth + 2); // +2 for indicator
 		const nameDisplay = agent.disabled ? theme.fg("dim", `✕ ${agent.name}`) : agent.name;
 		const modelDisplay = (agent.model || theme.fg("dim", "inherit")).padEnd(modelWidth);
@@ -60,7 +64,7 @@ function formatAgentDetail(agent: AgentConfig, theme: ExtensionContext["ui"]["th
 			: agent.source === "user"
 				? theme.fg("accent", "[user]")
 				: theme.fg("success", "[project]");
-	sections.push(theme.bold(agent.name) + " " + scopeLabel);
+	sections.push(`${theme.bold(agent.name)} ${scopeLabel}`);
 	sections.push(theme.fg("dim", "─".repeat(60)));
 
 	// Description
@@ -120,7 +124,11 @@ function formatAgentDetail(agent: AgentConfig, theme: ExtensionContext["ui"]["th
 	return sections.join("\n");
 }
 
-function parseAgentsArgs(args: string): { name?: string; scope?: "builtin" | "user" | "project"; showChains?: boolean } {
+function parseAgentsArgs(args: string): {
+	name?: string;
+	scope?: "builtin" | "user" | "project";
+	showChains?: boolean;
+} {
 	const trimmed = args.trim();
 	if (!trimmed) return {};
 
@@ -132,7 +140,11 @@ function parseAgentsArgs(args: string): { name?: string; scope?: "builtin" | "us
 	const showChains = /--chains/.test(trimmed);
 
 	// Remove flags to get agent name
-	const name = trimmed.replace(/--scope=(builtin|user|project)/, "").replace(/--chains/, "").trim() || undefined;
+	const name =
+		trimmed
+			.replace(/--scope=(builtin|user|project)/, "")
+			.replace(/--chains/, "")
+			.trim() || undefined;
 
 	return { name, scope, showChains };
 }
@@ -163,9 +175,7 @@ export function registerAgentsCommand(
 			// Otherwise show agent name completions
 			const discovery = discoverAgentsAll(cwd);
 			const allAgents = [...discovery.builtin, ...discovery.user, ...discovery.project];
-			return allAgents
-				.filter((a) => a.name.startsWith(prefix))
-				.map((a) => ({ value: a.name, label: a.name }));
+			return allAgents.filter((a) => a.name.startsWith(prefix)).map((a) => ({ value: a.name, label: a.name }));
 		},
 		handler: async (args, ctx) => {
 			const cwd = getBaseCwd();
@@ -191,7 +201,7 @@ export function registerAgentsCommand(
 			}
 
 			// List mode
-			let agentsToShow: AgentListEntry[] = [];
+			const agentsToShow: AgentListEntry[] = [];
 
 			// Filter by scope
 			if (scope === "builtin" || !scope) {
@@ -258,7 +268,10 @@ export function registerAgentsCommand(
 				output.push("");
 				const chainList = discovery.chains
 					.map((c) => {
-						const source = c.source === "user" ? ctx.ui.theme.fg("accent", "[user]") : ctx.ui.theme.fg("success", "[project]");
+						const source =
+							c.source === "user"
+								? ctx.ui.theme.fg("accent", "[user]")
+								: ctx.ui.theme.fg("success", "[project]");
 						return `  ${ctx.ui.theme.bold(c.name)} ${source} - ${c.description || ctx.ui.theme.fg("dim", "(no description)")}`;
 					})
 					.join("\n");
