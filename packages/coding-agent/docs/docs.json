@@ -36,6 +36,10 @@
           "path": "sessions.md"
         },
         {
+          "title": "MCP",
+          "path": "mcp.md"
+        },
+        {
           "title": "Compaction",
           "path": "compaction.md"
         }

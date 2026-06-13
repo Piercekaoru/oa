@@ -11,6 +11,7 @@ import { canonicalizePath, isLocalPath, resolvePath } from "../utils/paths.ts";
 import { createEventBus, type EventBus } from "./event-bus.ts";
 import { createExtensionRuntime, loadExtensionFromFactory, loadExtensions } from "./extensions/loader.ts";
 import type { Extension, ExtensionFactory, ExtensionRuntime, LoadExtensionsResult } from "./extensions/types.ts";
+import registerMcpExtension from "./mcp/extension.ts";
 import { DefaultPackageManager, type PathMetadata } from "./package-manager.ts";
 import type { PromptTemplate } from "./prompt-templates.ts";
 import { loadPromptTemplates } from "./prompt-templates.ts";
@@ -225,7 +226,11 @@ export class DefaultResourceLoader implements ResourceLoader {
 			...(options.additionalPromptTemplatePaths ?? []),
 		];
 		this.additionalThemePaths = options.additionalThemePaths ?? [];
-		this.extensionFactories = [registerSubagentExtension, ...(options.extensionFactories ?? [])];
+		this.extensionFactories = [
+			registerSubagentExtension,
+			registerMcpExtension,
+			...(options.extensionFactories ?? []),
+		];
 		this.noExtensions = options.noExtensions ?? false;
 		this.noSkills = options.noSkills ?? false;
 		this.noPromptTemplates = options.noPromptTemplates ?? false;

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Built-in MCP client** - Connect to MCP (Model Context Protocol) servers configured in `mcp.json` (global: `~/.openachieve/agent/mcp.json` or `~/.config/mcp/mcp.json`; project: `.mcp.json` or `.openachieve/mcp.json`, with `imports` for Cursor/Claude Code/Claude Desktop/Codex/Windsurf/VS Code configs). Tools are exposed through a single token-efficient `mcp` proxy tool (`list`/`describe`/`call`), and selected tools can be promoted to first-class tools via `directTools`. Supports stdio and Streamable HTTP transports (with SSE fallback), bearer and OAuth authentication (`/mcp auth <server>`), MCP resources exposed as `get_*` tools, lazy connections with idle disconnect (default 10 minutes, `settings.idleTimeoutMs`), and a shared metadata cache that also powers subagent `mcpDirectTools` allowlists. A new `/mcp` command shows server status and supports `tools`, `refresh`, `auth`, `connect`, and `disconnect` subcommands. MCP tool calls are permission-gated on a new `mcp` surface (`list`/`describe` allowed, calls ask by default; configure with patterns like `"mcp": { "github/*": "allow" }`).
+
 ## [0.79.4] - 2026-06-08
 
 ## [0.79.3] - 2026-06-06

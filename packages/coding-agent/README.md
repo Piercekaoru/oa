@@ -469,7 +469,7 @@ See [docs/rpc.md](docs/rpc.md) for the protocol.
 
 Openachieve Agent is aggressively extensible so it doesn't have to dictate your workflow. Features that other tools bake in can be built with [extensions](#extensions), [skills](#skills), or installed from third-party [Openachieve packages](#openachieve-packages). This keeps the core minimal while letting you shape Openachieve Agent to fit how you work.
 
-**No MCP.** Build CLI tools with READMEs (see [Skills](#skills)), or build an extension that adds MCP support. [Why?](https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/)
+**Token-efficient MCP.** MCP servers configured in `mcp.json` are exposed through a single `mcp` proxy tool that lists, describes, and calls tools on demand — dozens of servers cost ~200 tokens of context, and stdio servers only spawn when used. Promote your favorite tools to first-class tools with `directTools`. See [docs/mcp.md](docs/mcp.md). Prefer no MCP at all? Don't configure any servers and nothing is loaded — CLI tools with READMEs (see [Skills](#skills)) remain a great alternative. [Why?](https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/)
 
 **No sub-agents.** There's many ways to do this. Spawn Openachieve Agent instances via tmux, or build your own with [extensions](#extensions), or install a package that does it your way.
 

@@ -70,7 +70,23 @@ const BUILTIN_PERMISSION_CONFIG: PermissionConfig = {
 	write: "ask",
 	edit: "ask",
 	bash: "ask",
+	// Catch-all first: later (more specific) rules win during evaluation.
+	mcp: {
+		"*": "ask",
+		list: "allow",
+		describe: "allow",
+	},
 };
+
+// Direct-registered MCP tools (e.g. "github_create_issue") map to a
+// "server/tool" target on the shared "mcp" permission surface, so one config
+// block governs both proxy calls and direct tools. Process-wide because tool
+// registration spans extension runtimes across /reload.
+const mcpDirectToolTargets = new Map<string, string>();
+
+export function registerMcpToolPermissionTarget(toolName: string, server: string, mcpToolName: string): void {
+	mcpDirectToolTargets.set(toolName, `${server}/${mcpToolName}`);
+}
 
 function isPermissionState(value: unknown): value is PermissionState {
 	return value === "allow" || value === "ask" || value === "deny";
@@ -677,9 +693,36 @@ export class PermissionManager {
 		if (PATH_BEARING_TOOLS.has(toolName)) {
 			return this.resolvePathBearingTool(toolName, input, rules);
 		}
+		if (toolName === "mcp") {
+			return this.resolveMcpProxy(input, rules);
+		}
+		const mcpTarget = mcpDirectToolTargets.get(toolName);
+		if (mcpTarget) {
+			return this.resolveSurface(toolName, "mcp", mcpTarget, rules, "mcp tool policy", {
+				surface: "mcp",
+				pattern: `${mcpTarget.split("/")[0]}/*`,
+			});
+		}
 		return this.resolveSurface(toolName, toolName, "*", rules, `${toolName} tool policy`, {
 			surface: toolName,
 			pattern: "*",
+		});
+	}
+
+	private resolveMcpProxy(input: unknown, rules: PermissionRule[]): PermissionCheckResult {
+		const params = (input ?? {}) as { action?: unknown; server?: unknown; tool?: unknown };
+		const action = typeof params.action === "string" ? params.action : "*";
+		if (action === "call") {
+			const server = typeof params.server === "string" ? params.server : "*";
+			const tool = typeof params.tool === "string" ? params.tool : "*";
+			return this.resolveSurface("mcp", "mcp", `${server}/${tool}`, rules, "mcp call policy", {
+				surface: "mcp",
+				pattern: `${server}/*`,
+			});
+		}
+		return this.resolveSurface("mcp", "mcp", action, rules, "mcp metadata policy", {
+			surface: "mcp",
+			pattern: action,
 		});
 	}
 
