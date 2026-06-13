@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.81.0] - 2026-06-14
+
 ### Added
 
 - **`config.toml`** - Optional hand-friendly config file at `~/.openachieve/agent/config.toml` for wiring up third-party relay/proxy endpoints and common preferences in one place. A `[providers.*]` section mirrors `models.json` provider config (with a `models = ["id", ...]` string shorthand that applies sensible defaults, alongside full `[[providers.*.models]]` tables), and a `[settings]` section overlays `settings.json` (precedence: global `settings.json` ◁ `config.toml` ◁ project `settings.json`). Merges with existing `models.json`/`settings.json`/`auth.json` rather than replacing them; on a provider name conflict the `config.toml` definition wins. `config.toml` is read-only — in-app setting changes are still written to `settings.json`. `apiKey`/`headers` support the same `$ENV`/`!command`/literal resolution as `models.json`.
