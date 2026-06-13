@@ -20,7 +20,7 @@ import {
 } from "@openachieve/ai";
 import { registerOAuthProvider, resetOAuthProviders } from "@openachieve/ai/oauth";
 import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { dirname, join } from "path";
 import { type Static, Type } from "typebox";
 import { Compile } from "typebox/compile";
 import type { TLocalizedValidationError } from "typebox/error";
@@ -29,6 +29,7 @@ import { warnDeprecation } from "../utils/deprecation.ts";
 import { stripJsonComments } from "../utils/json.ts";
 import { normalizePath } from "../utils/paths.ts";
 import type { AuthStatus, AuthStorage } from "./auth-storage.ts";
+import { loadConfigToml } from "./config-toml.ts";
 import { BUILT_IN_PROVIDER_DISPLAY_NAMES } from "./provider-display-names.ts";
 import {
 	clearConfigValueCache,
@@ -410,10 +411,13 @@ export class ModelRegistry {
 	private loadError: string | undefined = undefined;
 	readonly authStorage: AuthStorage;
 	private modelsJsonPath: string | undefined;
+	private configTomlPath: string | undefined;
 
 	private constructor(authStorage: AuthStorage, modelsJsonPath: string | undefined) {
 		this.authStorage = authStorage;
 		this.modelsJsonPath = modelsJsonPath ? normalizePath(modelsJsonPath) : undefined;
+		// config.toml lives alongside models.json (same agent dir).
+		this.configTomlPath = this.modelsJsonPath ? join(dirname(this.modelsJsonPath), "config.toml") : undefined;
 		this.loadModels();
 	}
 
@@ -526,59 +530,107 @@ export class ModelRegistry {
 		return merged;
 	}
 
-	private loadCustomModels(modelsJsonPath: string): CustomModelsResult {
-		if (!existsSync(modelsJsonPath)) {
-			return emptyCustomModelsResult();
-		}
-
+	/** Read the raw provider map from models.json (JSON with `//` comments). */
+	private readModelsJsonProviders(modelsJsonPath: string): { providers?: Record<string, unknown>; error?: string } {
 		try {
 			const content = readFileSync(modelsJsonPath, "utf-8");
 			const parsed = JSON.parse(stripJsonComments(content)) as unknown;
-
-			if (!validateModelsConfig.Check(parsed)) {
-				const errors =
-					validateModelsConfig
-						.Errors(parsed)
-						.map((error) => `  - ${formatValidationPath(error)}: ${error.message}`)
-						.join("\n") || "Unknown schema error";
-				return emptyCustomModelsResult(`Invalid models.json schema:\n${errors}\n\nFile: ${modelsJsonPath}`);
+			if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+				return { error: `Invalid models.json: expected a top-level object.\n\nFile: ${modelsJsonPath}` };
 			}
-
-			const config = parsed as ModelsConfig;
-
-			// Additional validation
-			this.validateConfig(config);
-
-			const overrides = new Map<string, ProviderOverride>();
-			const modelOverrides = new Map<string, Map<string, ModelOverride>>();
-
-			for (const [providerName, providerConfig] of Object.entries(config.providers)) {
-				if (providerConfig.baseUrl || providerConfig.compat) {
-					overrides.set(providerName, {
-						baseUrl: providerConfig.baseUrl,
-						compat: providerConfig.compat,
-					});
-				}
-
-				this.storeProviderRequestConfig(providerName, providerConfig);
-
-				if (providerConfig.modelOverrides) {
-					modelOverrides.set(providerName, new Map(Object.entries(providerConfig.modelOverrides)));
-					for (const [modelId, modelOverride] of Object.entries(providerConfig.modelOverrides)) {
-						this.storeModelHeaders(providerName, modelId, modelOverride.headers);
-					}
-				}
+			const providers = (parsed as { providers?: unknown }).providers;
+			if (providers === undefined) {
+				return { error: `Invalid models.json: missing "providers" object.\n\nFile: ${modelsJsonPath}` };
 			}
-
-			return { models: this.parseModels(config), overrides, modelOverrides, error: undefined };
+			if (typeof providers !== "object" || providers === null || Array.isArray(providers)) {
+				return { error: `Invalid models.json: "providers" must be an object.\n\nFile: ${modelsJsonPath}` };
+			}
+			return { providers: providers as Record<string, unknown> };
 		} catch (error) {
 			if (error instanceof SyntaxError) {
-				return emptyCustomModelsResult(`Failed to parse models.json: ${error.message}\n\nFile: ${modelsJsonPath}`);
+				return { error: `Failed to parse models.json: ${error.message}\n\nFile: ${modelsJsonPath}` };
 			}
-			return emptyCustomModelsResult(
-				`Failed to load models.json: ${error instanceof Error ? error.message : error}\n\nFile: ${modelsJsonPath}`,
-			);
+			return {
+				error: `Failed to load models.json: ${error instanceof Error ? error.message : error}\n\nFile: ${modelsJsonPath}`,
+			};
 		}
+	}
+
+	/**
+	 * Load custom providers/models from models.json and config.toml.
+	 * Provider maps from both files are merged before validation; on a provider
+	 * name conflict the config.toml definition wins (it is the newer, hand-edited
+	 * source). Built-in models are preserved even if a source fails to load.
+	 */
+	private loadCustomModels(modelsJsonPath: string): CustomModelsResult {
+		const rawProviders: Record<string, unknown> = {};
+		const errors: string[] = [];
+		let hasSource = false;
+
+		// models.json (lower precedence)
+		if (existsSync(modelsJsonPath)) {
+			hasSource = true;
+			const { providers, error } = this.readModelsJsonProviders(modelsJsonPath);
+			if (error) errors.push(error);
+			if (providers) Object.assign(rawProviders, providers);
+		}
+
+		// config.toml (higher precedence — overrides models.json on provider name conflicts)
+		if (this.configTomlPath && existsSync(this.configTomlPath)) {
+			hasSource = true;
+			const toml = loadConfigToml(this.configTomlPath);
+			if (toml.error) errors.push(toml.error);
+			if (toml.providers) Object.assign(rawProviders, toml.providers);
+		}
+
+		if (!hasSource) {
+			return emptyCustomModelsResult();
+		}
+
+		const combinedError = errors.length > 0 ? errors.join("\n\n") : undefined;
+		const merged = { providers: rawProviders };
+
+		if (!validateModelsConfig.Check(merged)) {
+			const schemaErrors =
+				validateModelsConfig
+					.Errors(merged)
+					.map((error) => `  - ${formatValidationPath(error)}: ${error.message}`)
+					.join("\n") || "Unknown schema error";
+			const schemaMessage = `Invalid model provider configuration:\n${schemaErrors}`;
+			return emptyCustomModelsResult(combinedError ? `${combinedError}\n\n${schemaMessage}` : schemaMessage);
+		}
+
+		const config = merged as ModelsConfig;
+
+		try {
+			this.validateConfig(config);
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			return emptyCustomModelsResult(combinedError ? `${combinedError}\n\n${message}` : message);
+		}
+
+		const overrides = new Map<string, ProviderOverride>();
+		const modelOverrides = new Map<string, Map<string, ModelOverride>>();
+
+		for (const [providerName, providerConfig] of Object.entries(config.providers)) {
+			if (providerConfig.baseUrl || providerConfig.compat) {
+				overrides.set(providerName, {
+					baseUrl: providerConfig.baseUrl,
+					compat: providerConfig.compat,
+				});
+			}
+
+			this.storeProviderRequestConfig(providerName, providerConfig);
+
+			if (providerConfig.modelOverrides) {
+				modelOverrides.set(providerName, new Map(Object.entries(providerConfig.modelOverrides)));
+				for (const [modelId, modelOverride] of Object.entries(providerConfig.modelOverrides)) {
+					this.storeModelHeaders(providerName, modelId, modelOverride.headers);
+				}
+			}
+		}
+
+		return { models: this.parseModels(config), overrides, modelOverrides, error: combinedError };
 	}
 
 	private validateConfig(config: ModelsConfig): void {

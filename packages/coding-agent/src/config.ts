@@ -538,6 +538,11 @@ export function getModelsPath(): string {
 	return join(getAgentDir(), "models.json");
 }
 
+/** Get path to config.toml */
+export function getConfigTomlPath(): string {
+	return join(getAgentDir(), "config.toml");
+}
+
 /** Get path to auth.json */
 export function getAuthPath(): string {
 	return join(getAgentDir(), "auth.json");

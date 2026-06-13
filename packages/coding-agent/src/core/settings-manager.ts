@@ -4,6 +4,7 @@ import { dirname, join } from "path";
 import lockfile from "proper-lockfile";
 import { CONFIG_DIR_NAME, ENV_CLEAR_ON_SHRINK, ENV_HARDWARE_CURSOR, getAgentDir } from "../config.ts";
 import { normalizePath, resolvePath } from "../utils/paths.ts";
+import { loadConfigToml } from "./config-toml.ts";
 import { DEFAULT_HTTP_IDLE_TIMEOUT_MS, parseHttpIdleTimeoutMs } from "./http-dispatcher.ts";
 import { mergePermissionConfig, normalizePermissionConfig, type PermissionConfig } from "./permission-system.ts";
 
@@ -274,6 +275,8 @@ export class SettingsManager {
 	private projectSettingsLoadError: Error | null = null; // Track if project settings file had parse errors
 	private writeQueue: Promise<void> = Promise.resolve();
 	private errors: SettingsError[];
+	/** Read-only overlay from config.toml `[settings]`. Never written back to disk. */
+	private tomlSettings: Settings;
 
 	private constructor(
 		storage: SettingsStorage,
@@ -282,6 +285,7 @@ export class SettingsManager {
 		globalLoadError: Error | null = null,
 		projectLoadError: Error | null = null,
 		initialErrors: SettingsError[] = [],
+		tomlSettings: Settings = {},
 	) {
 		this.storage = storage;
 		this.globalSettings = initialGlobal;
@@ -289,17 +293,27 @@ export class SettingsManager {
 		this.globalSettingsLoadError = globalLoadError;
 		this.projectSettingsLoadError = projectLoadError;
 		this.errors = [...initialErrors];
-		this.settings = deepMergeSettings(this.globalSettings, this.projectSettings);
+		this.tomlSettings = tomlSettings;
+		this.settings = this.computeEffectiveSettings();
+	}
+
+	/**
+	 * Effective settings precedence (low → high):
+	 * built-in defaults ◁ global settings.json ◁ config.toml `[settings]` ◁ project settings.json.
+	 */
+	private computeEffectiveSettings(): Settings {
+		return deepMergeSettings(deepMergeSettings(this.globalSettings, this.tomlSettings), this.projectSettings);
 	}
 
 	/** Create a SettingsManager that loads from files */
 	static create(cwd: string, agentDir: string = getAgentDir()): SettingsManager {
 		const storage = new FileSettingsStorage(cwd, agentDir);
-		return SettingsManager.fromStorage(storage);
+		const toml = loadConfigToml(join(agentDir, "config.toml"));
+		return SettingsManager.fromStorage(storage, toml.settings ?? {}, toml.error);
 	}
 
 	/** Create a SettingsManager from an arbitrary storage backend */
-	static fromStorage(storage: SettingsStorage): SettingsManager {
+	static fromStorage(storage: SettingsStorage, tomlSettings: Settings = {}, tomlError?: string): SettingsManager {
 		const globalLoad = SettingsManager.tryLoadFromStorage(storage, "global");
 		const projectLoad = SettingsManager.tryLoadFromStorage(storage, "project");
 		const initialErrors: SettingsError[] = [];
@@ -309,6 +323,9 @@ export class SettingsManager {
 		if (projectLoad.error) {
 			initialErrors.push({ scope: "project", error: projectLoad.error });
 		}
+		if (tomlError) {
+			initialErrors.push({ scope: "global", error: new Error(tomlError) });
+		}
 
 		return new SettingsManager(
 			storage,
@@ -317,6 +334,7 @@ export class SettingsManager {
 			globalLoad.error,
 			projectLoad.error,
 			initialErrors,
+			tomlSettings,
 		);
 	}
 
@@ -455,7 +473,7 @@ export class SettingsManager {
 			this.recordError("project", projectLoad.error);
 		}
 
-		this.settings = deepMergeSettings(this.globalSettings, this.projectSettings);
+		this.settings = this.computeEffectiveSettings();
 	}
 
 	/** Apply additional overrides on top of current settings */
@@ -552,7 +570,7 @@ export class SettingsManager {
 	}
 
 	private save(): void {
-		this.settings = deepMergeSettings(this.globalSettings, this.projectSettings);
+		this.settings = this.computeEffectiveSettings();
 
 		if (this.globalSettingsLoadError) {
 			return;
@@ -569,7 +587,7 @@ export class SettingsManager {
 
 	private saveProjectSettings(settings: Settings): void {
 		this.projectSettings = structuredClone(settings);
-		this.settings = deepMergeSettings(this.globalSettings, this.projectSettings);
+		this.settings = this.computeEffectiveSettings();
 
 		if (this.projectSettingsLoadError) {
 			return;
