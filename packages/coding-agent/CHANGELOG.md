@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.82.1] - 2026-06-15
+
+### Added
+
+- The interactive prompt now shows a blinking cursor while waiting for input, similar to a shell command line. It stays solid while you type and stops blinking when the prompt is not focused.
+
 ## [0.82.0] - 2026-06-14
 
 ### Added

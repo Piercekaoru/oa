@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.82.1] - 2026-06-15
+
+### Added
+
+- Added a blinking cursor to the text editor input. The cursor blinks while the editor is focused and idle, stays solid while typing or moving the cursor, and stops blinking when the editor loses focus.
+
 ## [0.82.0] - 2026-06-14
 
 ## [0.81.2] - 2026-06-14
