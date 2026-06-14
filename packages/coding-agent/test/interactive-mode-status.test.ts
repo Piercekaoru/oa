@@ -981,3 +981,36 @@ describe("InteractiveMode.showLoadedResources", () => {
 		expect(output).not.toContain("[Skills]");
 	});
 });
+
+describe("InteractiveMode.getBuiltInCommandConflictDiagnostics", () => {
+	function makeCommand(name: string, sourcePath: string) {
+		return {
+			name,
+			invocationName: name,
+			sourceInfo: { path: sourcePath, source: "extension", scope: "temporary", origin: "top-level" } as SourceInfo,
+		};
+	}
+
+	function diagnose(
+		commands: ReturnType<typeof makeCommand>[],
+	): Array<{ type: string; message: string; path: string }> {
+		const extensionRunner = { getRegisteredCommands: () => commands } as any;
+		return (InteractiveMode as any).prototype.getBuiltInCommandConflictDiagnostics.call({}, extensionRunner);
+	}
+
+	test("does not warn for built-in inline extensions that reuse built-in command names", () => {
+		// subagents (<inline:1>) and mcp (<inline:2>) intentionally reuse built-in command names.
+		expect(diagnose([makeCommand("mcp", "<inline:2>"), makeCommand("agents", "<inline:1>")])).toEqual([]);
+	});
+
+	test("warns when a user extension shadows a built-in command name", () => {
+		const diags = diagnose([makeCommand("mcp", "/tmp/ext/mine.ts")]);
+		expect(diags).toHaveLength(1);
+		expect(diags[0].message).toContain("conflicts with built-in interactive command");
+		expect(diags[0].path).toBe("/tmp/ext/mine.ts");
+	});
+
+	test("ignores extension commands that do not collide with built-ins", () => {
+		expect(diagnose([makeCommand("my-own-cmd", "/tmp/ext/mine.ts")])).toEqual([]);
+	});
+});

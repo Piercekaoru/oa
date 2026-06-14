@@ -456,9 +456,12 @@ export class InteractiveMode {
 
 	private getBuiltInCommandConflictDiagnostics(extensionRunner: ExtensionRunner): ResourceDiagnostic[] {
 		const builtinNames = new Set(BUILTIN_SLASH_COMMANDS.map((command) => command.name));
+		// Built-in inline extensions (subagents, mcp) intentionally register commands that are also
+		// declared in BUILTIN_SLASH_COMMANDS so autocomplete shows one clean entry. Only surface
+		// conflicts for user-provided extensions, not these inline factories.
 		return extensionRunner
 			.getRegisteredCommands()
-			.filter((command) => builtinNames.has(command.name))
+			.filter((command) => builtinNames.has(command.name) && !command.sourceInfo.path.startsWith("<inline:"))
 			.map((command) => ({
 				type: "warning" as const,
 				message:
