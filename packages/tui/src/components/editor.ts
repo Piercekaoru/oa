@@ -220,6 +220,9 @@ const SLASH_COMMAND_SELECT_LIST_LAYOUT: SelectListLayoutOptions = {
 
 const ATTACHMENT_AUTOCOMPLETE_DEBOUNCE_MS = 20;
 
+// Cursor blink half-period (classic terminal rate).
+const CURSOR_BLINK_INTERVAL_MS = 530;
+
 export class Editor implements Component, Focusable {
 	private state: EditorState = {
 		lines: [""],
@@ -228,7 +231,26 @@ export class Editor implements Component, Focusable {
 	};
 
 	/** Focusable interface - set by TUI when focus changes */
-	focused: boolean = false;
+	private _focused: boolean = false;
+
+	// Blinking cursor: lit during the "on" phase, dark during the "off" phase.
+	private blinkVisible: boolean = true;
+	private blinkTimer: ReturnType<typeof setInterval> | null = null;
+
+	get focused(): boolean {
+		return this._focused;
+	}
+
+	set focused(value: boolean) {
+		if (this._focused === value) return;
+		this._focused = value;
+		if (value) {
+			this.startBlink();
+		} else {
+			this.stopBlink();
+		}
+		this.tui.requestRender();
+	}
 
 	protected tui: TUI;
 	private theme: EditorTheme;
@@ -299,6 +321,23 @@ export class Editor implements Component, Focusable {
 		this.paddingX = Number.isFinite(paddingX) ? Math.max(0, Math.floor(paddingX)) : 0;
 		const maxVisible = options.autocompleteMaxVisible ?? 5;
 		this.autocompleteMaxVisible = Number.isFinite(maxVisible) ? Math.max(3, Math.min(20, Math.floor(maxVisible))) : 5;
+	}
+
+	private startBlink(): void {
+		this.stopBlink();
+		this.blinkVisible = true;
+		this.blinkTimer = setInterval(() => {
+			this.blinkVisible = !this.blinkVisible;
+			this.tui.requestRender();
+		}, CURSOR_BLINK_INTERVAL_MS);
+	}
+
+	private stopBlink(): void {
+		if (this.blinkTimer) {
+			clearInterval(this.blinkTimer);
+			this.blinkTimer = null;
+		}
+		this.blinkVisible = true;
 	}
 
 	/** Set of currently valid paste IDs, for marker-aware segmentation. */
@@ -485,18 +524,22 @@ export class Editor implements Component, Focusable {
 				// Hardware cursor marker (zero-width, emitted before fake cursor for IME positioning)
 				const marker = emitCursorMarker ? CURSOR_MARKER : "";
 
+				// Blink: cursor block is lit when unfocused (static) or during the
+				// "on" phase of the blink cycle while focused; dark otherwise.
+				const cursorLit = !this.focused || this.blinkVisible;
+
 				if (after.length > 0) {
 					// Cursor is on a character (grapheme) - replace it with highlighted version
 					// Get the first grapheme from 'after'
 					const afterGraphemes = [...this.segment(after, "grapheme")];
 					const firstGrapheme = afterGraphemes[0]?.segment || "";
 					const restAfter = after.slice(firstGrapheme.length);
-					const cursor = `\x1b[7m${firstGrapheme}\x1b[0m`;
+					const cursor = cursorLit ? `\x1b[7m${firstGrapheme}\x1b[0m` : firstGrapheme;
 					displayText = before + marker + cursor + restAfter;
 					// lineVisibleWidth stays the same - we're replacing, not adding
 				} else {
-					// Cursor is at the end - add highlighted space
-					const cursor = "\x1b[7m \x1b[0m";
+					// Cursor is at the end - add highlighted space (plain space during dark phase)
+					const cursor = cursorLit ? "\x1b[7m \x1b[0m" : " ";
 					displayText = before + marker + cursor;
 					lineVisibleWidth = lineVisibleWidth + 1;
 					// If cursor overflows content width into the padding, flag it
@@ -538,6 +581,11 @@ export class Editor implements Component, Focusable {
 	}
 
 	handleInput(data: string): void {
+		// Keep the cursor solid while actively typing/navigating; resume blinking after the idle interval.
+		if (this._focused) {
+			this.startBlink();
+		}
+
 		const kb = getKeybindings();
 
 		// Handle character jump mode (awaiting next character to jump to)
