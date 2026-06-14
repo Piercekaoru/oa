@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.81.1] - 2026-06-14
+
 ### Fixed
 
 - Fixed spurious startup `[Extension issues]` warnings that reported the built-in subagents/MCP slash commands (e.g. `/agents`, `/mcp`, `/run`, `/chain`) as conflicting with built-in interactive commands. The conflict check now exempts built-in inline extensions while still warning when a user-provided extension shadows a built-in command name.
