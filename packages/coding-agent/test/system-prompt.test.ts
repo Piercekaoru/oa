@@ -111,4 +111,19 @@ describe("buildSystemPrompt", () => {
 			expect(prompt.match(/- Use dynamic_tool for summaries\./g)).toHaveLength(1);
 		});
 	});
+
+	describe("native feature awareness", () => {
+		test("mentions built-in MCP and config.toml support", () => {
+			const prompt = buildSystemPrompt({ contextFiles: [], skills: [], cwd: process.cwd() });
+			expect(prompt).toContain("MCP (Model Context Protocol) client support");
+			expect(prompt).toContain("mcp.json");
+			expect(prompt).toContain("config.toml");
+		});
+
+		test("indexes the MCP and config.toml docs", () => {
+			const prompt = buildSystemPrompt({ contextFiles: [], skills: [], cwd: process.cwd() });
+			expect(prompt).toContain("docs/mcp.md");
+			expect(prompt).toContain("docs/config.md");
+		});
+	});
 });

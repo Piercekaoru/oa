@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed the assistant reporting MCP (and config.toml) as not natively supported when asked. The system prompt now states that built-in MCP (Model Context Protocol) client support and config.toml configuration are native features, and indexes their docs (docs/mcp.md, docs/config.md).
+
 ## [0.81.1] - 2026-06-14
 
 ### Fixed
