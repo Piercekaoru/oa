@@ -16,6 +16,10 @@
           "path": "usage.md"
         },
         {
+          "title": "Plan Mode",
+          "path": "plan-mode.md"
+        },
+        {
           "title": "Providers",
           "path": "providers.md"
         },

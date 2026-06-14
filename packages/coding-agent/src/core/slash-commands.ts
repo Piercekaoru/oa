@@ -45,4 +45,6 @@ export const BUILTIN_SLASH_COMMANDS: ReadonlyArray<BuiltinSlashCommand> = [
 	{ name: "run-chain", description: "Run a saved chain" },
 	{ name: "view-agent", description: "View live conversation for a running subagent" },
 	{ name: "subagents-doctor", description: "Show subagent diagnostics" },
+	{ name: "plan", description: "Toggle plan mode (read-only exploration)" },
+	{ name: "todos", description: "Show current plan todo list" },
 ];

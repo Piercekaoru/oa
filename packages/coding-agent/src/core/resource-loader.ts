@@ -13,6 +13,7 @@ import { createExtensionRuntime, loadExtensionFromFactory, loadExtensions } from
 import type { Extension, ExtensionFactory, ExtensionRuntime, LoadExtensionsResult } from "./extensions/types.ts";
 import registerMcpExtension from "./mcp/extension.ts";
 import { DefaultPackageManager, type PathMetadata } from "./package-manager.ts";
+import registerPlanModeExtension from "./plan-mode/extension.ts";
 import type { PromptTemplate } from "./prompt-templates.ts";
 import { loadPromptTemplates } from "./prompt-templates.ts";
 import { SettingsManager } from "./settings-manager.ts";
@@ -229,6 +230,7 @@ export class DefaultResourceLoader implements ResourceLoader {
 		this.extensionFactories = [
 			registerSubagentExtension,
 			registerMcpExtension,
+			registerPlanModeExtension,
 			...(options.extensionFactories ?? []),
 		];
 		this.noExtensions = options.noExtensions ?? false;

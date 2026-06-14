@@ -19,7 +19,7 @@
 
 Openachieve Agent is a minimal terminal coding harness. Adapt Openachieve Agent to your workflows, not the other way around, without having to fork and modify Openachieve Agent internals. Extend it with TypeScript [Extensions](#extensions), [Skills](#skills), [Prompt Templates](#prompt-templates), and [Themes](#themes). Put your extensions, skills, prompt templates, and themes in [Openachieve Agent Packages](#openachieve-packages) and share them with others via npm or git.
 
-Openachieve Agent ships with powerful defaults but skips features like sub agents and plan mode. Instead, you can ask Openachieve Agent to build what you want or install a third party Openachieve package that matches your workflow.
+Openachieve Agent ships with powerful defaults, including built-in sub agents, MCP client support, and [Plan Mode](#plan-mode). You can extend it further by asking Openachieve Agent to build what you want, or by installing a third party Openachieve package that matches your workflow.
 
 Openachieve Agent runs in four modes: interactive, print or JSON, RPC for process integration, and an SDK for embedding in your own apps. See [openclaw/openclaw](https://github.com/openclaw/openclaw) for a real-world SDK integration.
 
@@ -48,6 +48,7 @@ I regularly publish my own `Openachieve Agent-mono` work sessions here:
   - [Commands](#commands)
   - [Keyboard Shortcuts](#keyboard-shortcuts)
   - [Message Queue](#message-queue)
+- [Plan Mode](#plan-mode)
 - [Sessions](#sessions)
   - [Branching](#branching)
   - [Compaction](#compaction)
@@ -221,6 +222,18 @@ Submit messages while the agent is working:
 On Windows Terminal, `Alt+Enter` is fullscreen by default. Remap it in [docs/terminal-setup.md](docs/terminal-setup.md) so Openachieve Agent can receive the follow-up shortcut.
 
 Configure delivery in [settings](docs/settings.md): `steeringMode` and `followUpMode` can be `"one-at-a-time"` (default, waits for response) or `"all"` (delivers all queued at once). `transport` selects provider transport preference (`"sse"`, `"websocket"`, or `"auto"`) for providers that support multiple transports.
+
+---
+
+## Plan Mode
+
+Plan mode is a built-in read-only exploration mode. When enabled, Openachieve Agent reads and analyzes your code but cannot modify files — it produces a numbered plan you review before any changes are made.
+
+- `/plan` or `Ctrl+Alt+P` toggles plan mode; `oa --plan` starts a session already in plan mode.
+- Only read-only tools are available (`read`, `grep`, `find`, `ls`, and `bash` limited to an allowlist of read-only commands); `edit` and `write` are disabled.
+- When the agent finishes, choose **Execute the plan** (restores full tools and runs the steps with progress tracking), **Stay in plan mode**, or **Refine the plan**.
+
+See [docs/plan-mode.md](docs/plan-mode.md) for details.
 
 ---
 
