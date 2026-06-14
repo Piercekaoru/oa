@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.82.0] - 2026-06-14
+
 ### Added
 
 - **Plan Mode** - Built-in read-only exploration mode (previously available only as an example extension). Toggle with `/plan` or `Ctrl+Alt+P`, or start a session with `oa --plan`. While active, only read-only tools are available (`read`, `grep`, `find`, `ls`, and `bash` limited to a read-only allowlist) and `edit`/`write` are disabled; the agent produces a numbered plan under a `Plan:` header that you review before executing. On finish, choose to execute (with `[DONE:n]` progress tracking), stay in plan mode, or refine the plan. Plan state persists across session resume. Adds `/plan` and `/todos` commands; see `docs/plan-mode.md`.
