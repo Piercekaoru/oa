@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.83.0] - 2026-06-15
+
+### Added
+
+- Added built-in goal mode. `/goal <intent>` pursues a goal autonomously until it is verifiably done: it locks a contract (outcome, done-criteria, `verifyCommand`, ask-before list, turn budget, judge), then auto-continues turn-by-turn with a spin-guard and budget cap, and gates completion behind an independent cross-model judge that must approve before the goal transitions to done. Includes subcommands (`status`/`pause`/`resume`/`cancel`/`budget`/`judge`/`autopilot`/`ask`/`help`), the `--goal` flag, `Ctrl+Alt+G`, and the `goal_set`/`goal_progress`/`goal_complete`/`goal_block` tools. See [docs/goal-mode.md](docs/goal-mode.md).
+
 ## [0.82.1] - 2026-06-15
 
 ### Added
