@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.83.2] - 2026-06-16
+
+### Changed
+
+- The subscription login picker (`/login` → "Use a subscription") now greys out and disables the OAuth providers (Anthropic, GitHub Copilot, ChatGPT) with a `temporarily unavailable` note, and shows a non-selectable `OpenAchieve account login (coming soon)` placeholder.
+
 ## [0.83.1] - 2026-06-16
 
 ### Changed
