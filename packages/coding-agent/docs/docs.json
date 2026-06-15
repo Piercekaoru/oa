@@ -20,6 +20,10 @@
           "path": "plan-mode.md"
         },
         {
+          "title": "Goal Mode",
+          "path": "goal-mode.md"
+        },
+        {
           "title": "Providers",
           "path": "providers.md"
         },

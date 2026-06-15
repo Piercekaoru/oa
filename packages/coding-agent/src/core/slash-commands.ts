@@ -47,4 +47,5 @@ export const BUILTIN_SLASH_COMMANDS: ReadonlyArray<BuiltinSlashCommand> = [
 	{ name: "subagents-doctor", description: "Show subagent diagnostics" },
 	{ name: "plan", description: "Toggle plan mode (read-only exploration)" },
 	{ name: "todos", description: "Show current plan todo list" },
+	{ name: "goal", description: "Pursue a goal autonomously until done (judged)" },
 ];

@@ -49,6 +49,7 @@ I regularly publish my own `Openachieve Agent-mono` work sessions here:
   - [Keyboard Shortcuts](#keyboard-shortcuts)
   - [Message Queue](#message-queue)
 - [Plan Mode](#plan-mode)
+- [Goal Mode](#goal-mode)
 - [Sessions](#sessions)
   - [Branching](#branching)
   - [Compaction](#compaction)
@@ -234,6 +235,19 @@ Plan mode is a built-in read-only exploration mode. When enabled, Openachieve Ag
 - When the agent finishes, choose **Execute the plan** (restores full tools and runs the steps with progress tracking), **Stay in plan mode**, or **Refine the plan**.
 
 See [docs/plan-mode.md](docs/plan-mode.md) for details.
+
+---
+
+## Goal Mode
+
+Goal mode is a built-in autonomous loop. You give Openachieve Agent a goal; it locks a contract, then works turn-by-turn on its own until the goal is **verifiably done** — confirmed by running a verify command and approved by an independent judge.
+
+- `/goal <intent>` starts setup; `oa --goal "<intent>"` starts a session already pursuing a goal; `Ctrl+Alt+G` shows status.
+- The agent proposes a **contract** (outcome, done-criteria, `verifyCommand`, ask-before list, turn budget, judge) for you to approve, then auto-continues. The footer shows `◎ goal n/budget`.
+- **Completion is judged**: `goal_complete` runs the `verifyCommand` and submits evidence to an independent judge model that must approve before the goal is done. Set a cross-model default with `/goal judge <provider>/<modelId>` (recommended), or `/goal judge same` to self-judge.
+- Safeguards: a turn **budget**, a **spin guard** (a turn with no tool actions blocks the goal), an **ask-before** gate on bash, and your input always preempts the loop. Manage it with `/goal status`, `/goal pause`, `/goal resume`, `/goal cancel`, `/goal budget <n>`, and `/goal ask <question>`.
+
+See [docs/goal-mode.md](docs/goal-mode.md) for details.
 
 ---
 

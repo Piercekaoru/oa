@@ -11,6 +11,7 @@ import { canonicalizePath, isLocalPath, resolvePath } from "../utils/paths.ts";
 import { createEventBus, type EventBus } from "./event-bus.ts";
 import { createExtensionRuntime, loadExtensionFromFactory, loadExtensions } from "./extensions/loader.ts";
 import type { Extension, ExtensionFactory, ExtensionRuntime, LoadExtensionsResult } from "./extensions/types.ts";
+import registerGoalModeExtension from "./goal-mode/extension.ts";
 import registerMcpExtension from "./mcp/extension.ts";
 import { DefaultPackageManager, type PathMetadata } from "./package-manager.ts";
 import registerPlanModeExtension from "./plan-mode/extension.ts";
@@ -231,6 +232,7 @@ export class DefaultResourceLoader implements ResourceLoader {
 			registerSubagentExtension,
 			registerMcpExtension,
 			registerPlanModeExtension,
+			registerGoalModeExtension,
 			...(options.extensionFactories ?? []),
 		];
 		this.noExtensions = options.noExtensions ?? false;
