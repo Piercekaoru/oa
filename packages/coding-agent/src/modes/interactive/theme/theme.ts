@@ -1223,6 +1223,7 @@ export function getEditorTheme(): EditorTheme {
 	return {
 		borderColor: (text: string) => theme.fg("borderMuted", text),
 		selectList: getSelectListTheme(),
+		commandColor: (text: string) => theme.fg("accent", text),
 	};
 }
 

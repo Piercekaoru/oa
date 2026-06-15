@@ -206,6 +206,8 @@ interface LayoutLine {
 export interface EditorTheme {
 	borderColor: (str: string) => string;
 	selectList: SelectListTheme;
+	/** Optional: colorize a leading slash-command token (e.g. "/settings") in the input. */
+	commandColor?: (str: string) => string;
 }
 
 export interface EditorOptions {
@@ -511,15 +513,37 @@ export class Editor implements Component, Focusable {
 		// Emit hardware cursor marker only when focused and not showing autocomplete
 		const emitCursorMarker = this.focused && !this.autocompleteState;
 
-		for (const layoutLine of visibleLines) {
-			let displayText = layoutLine.text;
+		// Detect a leading slash-command (e.g. "/settings") on the first line so it
+		// can be colorized. Only the first layout line of logical line 0 is eligible.
+		const commandColor = this.theme.commandColor;
+		let commandEnd = 0;
+		if (commandColor && this.scrollOffset === 0) {
+			const match = /^\/[^\s]+/.exec(this.state.lines[0] ?? "");
+			if (match) commandEnd = match[0].length;
+		}
+		// Colorize the portion of `segment` (which begins at line offset `segStart`)
+		// that falls within the command range [0, end). Splitting first, then coloring
+		// each piece keeps the cursor's string offsets valid.
+		const colorizeCommand = (segment: string, segStart: number, end: number): string => {
+			if (!commandColor || end <= 0) return segment;
+			const b = Math.min(end, segStart + segment.length);
+			if (b <= segStart) return segment;
+			const mid = segment.slice(0, b - segStart);
+			const post = segment.slice(b - segStart);
+			return commandColor(mid) + post;
+		};
+
+		for (let li = 0; li < visibleLines.length; li++) {
+			const layoutLine = visibleLines[li];
+			const lineCommandEnd = this.scrollOffset === 0 && li === 0 ? commandEnd : 0;
+			let displayText = colorizeCommand(layoutLine.text, 0, lineCommandEnd);
 			let lineVisibleWidth = visibleWidth(layoutLine.text);
 			let cursorInPadding = false;
 
 			// Add cursor if this line has it
 			if (layoutLine.hasCursor && layoutLine.cursorPos !== undefined) {
-				const before = displayText.slice(0, layoutLine.cursorPos);
-				const after = displayText.slice(layoutLine.cursorPos);
+				const before = layoutLine.text.slice(0, layoutLine.cursorPos);
+				const after = layoutLine.text.slice(layoutLine.cursorPos);
 
 				// Hardware cursor marker (zero-width, emitted before fake cursor for IME positioning)
 				const marker = emitCursorMarker ? CURSOR_MARKER : "";
@@ -528,6 +552,8 @@ export class Editor implements Component, Focusable {
 				// "on" phase of the blink cycle while focused; dark otherwise.
 				const cursorLit = !this.focused || this.blinkVisible;
 
+				const coloredBefore = colorizeCommand(before, 0, lineCommandEnd);
+
 				if (after.length > 0) {
 					// Cursor is on a character (grapheme) - replace it with highlighted version
 					// Get the first grapheme from 'after'
@@ -535,12 +561,17 @@ export class Editor implements Component, Focusable {
 					const firstGrapheme = afterGraphemes[0]?.segment || "";
 					const restAfter = after.slice(firstGrapheme.length);
 					const cursor = cursorLit ? `\x1b[7m${firstGrapheme}\x1b[0m` : firstGrapheme;
-					displayText = before + marker + cursor + restAfter;
+					const coloredRest = colorizeCommand(
+						restAfter,
+						layoutLine.cursorPos + firstGrapheme.length,
+						lineCommandEnd,
+					);
+					displayText = coloredBefore + marker + cursor + coloredRest;
 					// lineVisibleWidth stays the same - we're replacing, not adding
 				} else {
 					// Cursor is at the end - add highlighted space (plain space during dark phase)
 					const cursor = cursorLit ? "\x1b[7m \x1b[0m" : " ";
-					displayText = before + marker + cursor;
+					displayText = coloredBefore + marker + cursor;
 					lineVisibleWidth = lineVisibleWidth + 1;
 					// If cursor overflows content width into the padding, flag it
 					if (lineVisibleWidth > contentWidth && paddingX > 0) {

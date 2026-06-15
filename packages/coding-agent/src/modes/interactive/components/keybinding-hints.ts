@@ -3,7 +3,7 @@
  */
 
 import { getKeybindings, type Keybinding, type KeyId } from "@openachieve/tui";
-import { theme } from "../theme/theme.ts";
+import { type ThemeColor, theme } from "../theme/theme.ts";
 
 export interface KeyTextFormatOptions {
 	capitalize?: boolean;
@@ -39,10 +39,10 @@ export function keyDisplayText(keybinding: Keybinding): string {
 	return formatKeys(getKeybindings().getKeys(keybinding), { capitalize: true });
 }
 
-export function keyHint(keybinding: Keybinding, description: string): string {
-	return theme.fg("dim", keyText(keybinding)) + theme.fg("muted", ` ${description}`);
+export function keyHint(keybinding: Keybinding, description: string, keyColor: ThemeColor = "dim"): string {
+	return theme.fg(keyColor, keyText(keybinding)) + theme.fg("muted", ` ${description}`);
 }
 
-export function rawKeyHint(key: string, description: string): string {
-	return theme.fg("dim", formatKeyText(key)) + theme.fg("muted", ` ${description}`);
+export function rawKeyHint(key: string, description: string, keyColor: ThemeColor = "dim"): string {
+	return theme.fg(keyColor, formatKeyText(key)) + theme.fg("muted", ` ${description}`);
 }
