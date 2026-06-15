@@ -4533,7 +4533,15 @@ export class InteractiveMode {
 			id: provider.id,
 			name: provider.name,
 			authType: "oauth",
+			disabledNote: "temporarily unavailable",
 		}));
+
+		options.push({
+			id: "openachieve",
+			name: "OpenAchieve account login",
+			authType: "oauth",
+			disabledNote: "coming soon",
+		});
 
 		const modelProviders = new Set(this.session.modelRegistry.getAll().map((model) => model.provider));
 		for (const providerId of modelProviders) {

@@ -7,6 +7,8 @@ export type AuthSelectorProvider = {
 	id: string;
 	name: string;
 	authType: "oauth" | "api_key";
+	/** When set, the item is greyed out, non-selectable, and shows this note (e.g. "temporarily unavailable"). */
+	disabledNote?: string;
 };
 
 /**
@@ -65,7 +67,7 @@ export class OAuthSelectorComponent extends Container implements Focusable {
 		this.searchInput = new Input();
 		this.searchInput.onSubmit = () => {
 			const selectedProvider = this.filteredProviders[this.selectedIndex];
-			if (selectedProvider) {
+			if (selectedProvider && !selectedProvider.disabledNote) {
 				this.onSelectCallback(selectedProvider.id);
 			}
 		};
@@ -111,7 +113,10 @@ export class OAuthSelectorComponent extends Container implements Focusable {
 
 			const statusIndicator = this.formatStatusIndicator(provider);
 			let line = "";
-			if (isSelected) {
+			if (provider.disabledNote) {
+				const prefix = isSelected ? theme.fg("muted", "→ ") : "  ";
+				line = prefix + theme.fg("muted", provider.name) + theme.fg("dim", ` (${provider.disabledNote})`);
+			} else if (isSelected) {
 				const prefix = theme.fg("accent", "→ ");
 				const text = theme.fg("accent", provider.name);
 				line = prefix + text + statusIndicator;
@@ -183,7 +188,7 @@ export class OAuthSelectorComponent extends Container implements Focusable {
 		// Enter
 		else if (kb.matches(keyData, "tui.select.confirm")) {
 			const selectedProvider = this.filteredProviders[this.selectedIndex];
-			if (selectedProvider) {
+			if (selectedProvider && !selectedProvider.disabledNote) {
 				this.onSelectCallback(selectedProvider.id);
 			}
 		}
