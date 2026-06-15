@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.83.1] - 2026-06-16
+
+### Changed
+
+- The startup banner now highlights commands and key hints in the accent color: the `[Skills]`/`[Prompts]`/`[Extensions]` entries and the hint-line keys (`/`, `!`, `ctrl+c`, `ctrl+o`, …). Typed slash-commands like `/settings` are also highlighted in the prompt input.
+
 ## [0.83.0] - 2026-06-15
 
 ### Added

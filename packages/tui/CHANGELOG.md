@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.83.1] - 2026-06-16
+
+### Added
+
+- The editor now highlights a leading slash-command token (e.g. `/settings`) in the accent color, via a new optional `commandColor` on `EditorTheme`.
+
 ## [0.83.0] - 2026-06-15
 
 ## [0.82.1] - 2026-06-15
