@@ -1,6 +1,6 @@
 {
 	"name": "@openachieve/agent",
-	"version": "0.83.2",
+	"version": "0.83.4",
 	"description": "Coding agent CLI with read, bash, edit, write tools and session management",
 	"type": "module",
 	"openachieveConfig": {
@@ -20,12 +20,14 @@
 		".": {
 			"types": "./dist/index.d.ts",
 			"openachieve-source": "./src/index.ts",
-			"import": "./dist/index.js"
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
 		},
 		"./hooks": {
 			"types": "./dist/core/hooks/index.d.ts",
 			"openachieve-source": "./src/core/hooks/index.ts",
-			"import": "./dist/core/hooks/index.js"
+			"import": "./dist/core/hooks/index.js",
+			"default": "./dist/core/hooks/index.js"
 		}
 	},
 	"files": [
@@ -48,9 +50,9 @@
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "1.29.0",
-		"@openachieve/agent-core": "^0.83.2",
-		"@openachieve/ai": "^0.83.2",
-		"@openachieve/tui": "^0.83.2",
+		"@openachieve/agent-core": "^0.83.4",
+		"@openachieve/ai": "^0.83.4",
+		"@openachieve/tui": "^0.83.4",
 		"@silvia-odwyer/photon-node": "0.3.4",
 		"chalk": "5.6.2",
 		"cross-spawn": "7.0.6",

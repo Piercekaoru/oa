@@ -1,6 +1,6 @@
 {
 	"name": "@openachieve/agent-core",
-	"version": "0.83.2",
+	"version": "0.83.4",
 	"description": "General-purpose agent with transport abstraction, state management, and attachment support",
 	"type": "module",
 	"main": "./dist/index.js",
@@ -9,12 +9,14 @@
 		".": {
 			"types": "./dist/index.d.ts",
 			"openachieve-source": "./src/index.ts",
-			"import": "./dist/index.js"
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
 		},
 		"./node": {
 			"types": "./dist/node.d.ts",
 			"openachieve-source": "./src/node.ts",
-			"import": "./dist/node.js"
+			"import": "./dist/node.js",
+			"default": "./dist/node.js"
 		},
 		"./package.json": "./package.json"
 	},
@@ -31,7 +33,7 @@
 		"prepublishOnly": "npm run clean && npm run build"
 	},
 	"dependencies": {
-		"@openachieve/ai": "^0.83.2",
+		"@openachieve/ai": "^0.83.4",
 		"ignore": "7.0.5",
 		"typebox": "1.1.38",
 		"yaml": "2.9.0"

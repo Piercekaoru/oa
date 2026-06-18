@@ -4,6 +4,7 @@ import type { Model } from "@openachieve/ai";
 import { getAgentDir } from "../config.ts";
 import { resolvePath } from "../utils/paths.ts";
 import { AuthStorage } from "./auth-storage.ts";
+import { OPENACHIEVE_PROVIDER_CONFIG } from "./builtin-providers/openachieve.ts";
 import type { SessionStartEvent, ToolDefinition } from "./extensions/index.ts";
 import { ModelRegistry } from "./model-registry.ts";
 import { DefaultResourceLoader, type DefaultResourceLoaderOptions, type ResourceLoader } from "./resource-loader.ts";
@@ -146,6 +147,15 @@ export async function createAgentSessionServices(
 	await resourceLoader.reload();
 
 	const diagnostics: AgentSessionRuntimeDiagnostic[] = [];
+
+	// Built-in OpenAchieve provider (account login + metered proxy), available without -e.
+	try {
+		modelRegistry.registerProvider("openachieve", OPENACHIEVE_PROVIDER_CONFIG);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		diagnostics.push({ type: "error", message: `Built-in OpenAchieve provider error: ${message}` });
+	}
+
 	const extensionsResult = resourceLoader.getExtensions();
 	for (const { name, config, extensionPath } of extensionsResult.runtime.pendingProviderRegistrations) {
 		try {

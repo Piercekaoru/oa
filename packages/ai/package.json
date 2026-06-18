@@ -1,6 +1,6 @@
 {
 	"name": "@openachieve/ai",
-	"version": "0.83.2",
+	"version": "0.83.4",
 	"description": "Unified LLM API with automatic model discovery and provider configuration",
 	"type": "module",
 	"main": "./dist/index.js",
@@ -9,57 +9,68 @@
 		".": {
 			"types": "./dist/index.d.ts",
 			"openachieve-source": "./src/index.ts",
-			"import": "./dist/index.js"
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
 		},
 		"./anthropic": {
 			"types": "./dist/providers/anthropic.d.ts",
 			"openachieve-source": "./src/providers/anthropic.ts",
-			"import": "./dist/providers/anthropic.js"
+			"import": "./dist/providers/anthropic.js",
+			"default": "./dist/providers/anthropic.js"
 		},
 		"./azure-openai-responses": {
 			"types": "./dist/providers/azure-openai-responses.d.ts",
 			"openachieve-source": "./src/providers/azure-openai-responses.ts",
-			"import": "./dist/providers/azure-openai-responses.js"
+			"import": "./dist/providers/azure-openai-responses.js",
+			"default": "./dist/providers/azure-openai-responses.js"
 		},
 		"./google": {
 			"types": "./dist/providers/google.d.ts",
 			"openachieve-source": "./src/providers/google.ts",
-			"import": "./dist/providers/google.js"
+			"import": "./dist/providers/google.js",
+			"default": "./dist/providers/google.js"
 		},
 		"./google-vertex": {
 			"types": "./dist/providers/google-vertex.d.ts",
 			"openachieve-source": "./src/providers/google-vertex.ts",
-			"import": "./dist/providers/google-vertex.js"
+			"import": "./dist/providers/google-vertex.js",
+			"default": "./dist/providers/google-vertex.js"
 		},
 		"./mistral": {
 			"types": "./dist/providers/mistral.d.ts",
 			"openachieve-source": "./src/providers/mistral.ts",
-			"import": "./dist/providers/mistral.js"
+			"import": "./dist/providers/mistral.js",
+			"default": "./dist/providers/mistral.js"
 		},
 		"./openai-codex-responses": {
 			"types": "./dist/providers/openai-codex-responses.d.ts",
 			"openachieve-source": "./src/providers/openai-codex-responses.ts",
-			"import": "./dist/providers/openai-codex-responses.js"
+			"import": "./dist/providers/openai-codex-responses.js",
+			"default": "./dist/providers/openai-codex-responses.js"
 		},
 		"./openai-completions": {
 			"types": "./dist/providers/openai-completions.d.ts",
 			"openachieve-source": "./src/providers/openai-completions.ts",
-			"import": "./dist/providers/openai-completions.js"
+			"import": "./dist/providers/openai-completions.js",
+			"default": "./dist/providers/openai-completions.js"
 		},
 		"./openai-responses": {
 			"types": "./dist/providers/openai-responses.d.ts",
 			"openachieve-source": "./src/providers/openai-responses.ts",
-			"import": "./dist/providers/openai-responses.js"
+			"import": "./dist/providers/openai-responses.js",
+			"default": "./dist/providers/openai-responses.js"
 		},
 		"./oauth": {
 			"types": "./dist/oauth.d.ts",
 			"openachieve-source": "./src/oauth.ts",
-			"import": "./dist/oauth.js"
+			"import": "./dist/oauth.js",
+			"default": "./dist/oauth.js"
 		},
 		"./bedrock-provider": {
 			"types": "./dist/bedrock-provider.d.ts",
 			"openachieve-source": "./src/bedrock-provider.ts",
-			"import": "./dist/bedrock-provider.js"
+			"import": "./dist/bedrock-provider.js",
+			"default": "./dist/bedrock-provider.js"
 		}
 	},
 	"bin": {

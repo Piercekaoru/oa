@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.83.4] - 2026-06-19
+
+### Fixed
+
+- Runtime-loaded extensions can now `import` the workspace packages (`@openachieve/ai`, `@openachieve/tui`, `@openachieve/agent-core`, `@openachieve/agent`) when running from a published npm install. Added a `default` export condition to each package's `exports` so the jiti-based extension loader resolves them; previously only `import`/`openachieve-source` were declared, causing `No "exports" main defined`.
+
+## [0.83.3] - 2026-06-19
+
+### Added
+
+- Added built-in **OpenAchieve account login**: `/login` → "Use a subscription" → "OpenAchieve" runs an OAuth 2.0 device-authorization flow against the OpenAchieve backend and routes chat through its OpenAI-compatible, credits-metered proxy. Available by default (no extension needed); override the backend with `OPENACHIEVE_BASE_URL`. Other subscription logins remain `temporarily unavailable`.
+
 ## [0.83.2] - 2026-06-16
 
 ### Changed
