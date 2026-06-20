@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.83.6] - 2026-06-21
+
+### Fixed
+
+- The OpenAchieve model list now refreshes in the background on every model load using the stored credentials, so already-logged-in users pick up server-side changes without re-logging in (previously the list was only fetched at login/token refresh, so existing sessions never updated). When the backend reports no models for the account's plan, the CLI now shows no OpenAchieve models instead of falling back to the static placeholder list.
+
 ## [0.83.5] - 2026-06-20
 
 ### Changed

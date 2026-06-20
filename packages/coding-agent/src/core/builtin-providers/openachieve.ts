@@ -59,9 +59,20 @@ type TokenResponse = {
 	error?: string;
 };
 
+// Throttle + concurrency guard so the background refresh (fired on every model
+// load) doesn't hammer the backend: at most one in-flight fetch, and at most
+// one successful fetch per minute.
+let lastFetchAt = 0;
+let fetching = false;
+const REFRESH_INTERVAL_MS = 60_000;
+
 /** Fetch the account's allowed models and cache their ids. Best-effort: any
- * failure leaves the previous cache (or the static fallback) untouched. */
+ * network/non-2xx failure leaves the previous cache (or static fallback)
+ * untouched. A 200 always writes the cache — even an empty list — so a plan
+ * with no models is recorded as such rather than mistaken for "never fetched". */
 async function fetchAndCacheModels(accessToken: string): Promise<void> {
+	if (fetching || Date.now() - lastFetchAt < REFRESH_INTERVAL_MS) return;
+	fetching = true;
 	try {
 		const res = await fetch(`${BASE}/api/v1/models`, {
 			headers: { Authorization: `Bearer ${accessToken}` },
@@ -71,21 +82,25 @@ async function fetchAndCacheModels(accessToken: string): Promise<void> {
 		const ids = (body.data ?? [])
 			.map((m) => m.id)
 			.filter((id): id is string => typeof id === "string" && id.length > 0);
-		if (ids.length === 0) return;
 		mkdirSync(dirname(MODELS_CACHE), { recursive: true });
 		writeFileSync(MODELS_CACHE, JSON.stringify({ ids }), "utf8");
+		lastFetchAt = Date.now();
 	} catch {
 		// best-effort; keep existing cache / static fallback on any failure
+	} finally {
+		fetching = false;
 	}
 }
 
-function readCachedModelIds(): string[] {
+/** Cached model ids, or null when the cache is absent/unreadable (i.e. we have
+ * never successfully fetched). An empty array means the server returned none. */
+function readCachedModelIds(): string[] | null {
 	try {
 		const parsed = JSON.parse(readFileSync(MODELS_CACHE, "utf8")) as { ids?: unknown };
-		if (!Array.isArray(parsed.ids)) return [];
+		if (!Array.isArray(parsed.ids)) return null;
 		return parsed.ids.filter((id): id is string => typeof id === "string" && id.length > 0);
 	} catch {
-		return [];
+		return null;
 	}
 }
 
@@ -191,14 +206,19 @@ export const OPENACHIEVE_PROVIDER_CONFIG: ProviderConfig = {
 		login,
 		refreshToken,
 		getApiKey: (credentials) => credentials.access,
-		// Replace the static list with the server-decided set cached at login.
-		modifyModels(models, _credentials) {
-			const ids = readCachedModelIds();
-			if (ids.length === 0) return models;
+		// Replace the static list with the server-decided set. Fire a throttled
+		// background refresh (using the live token) so already-logged-in users
+		// pick up the latest list without re-logging in; the next model load
+		// reads the freshly written cache.
+		modifyModels(models, credentials) {
+			void fetchAndCacheModels(credentials.access);
+			const cached = readCachedModelIds();
+			if (cached === null) return models; // never fetched -> keep static fallback
+			const others = models.filter((m) => m.provider !== "openachieve");
+			if (cached.length === 0) return others; // server says none -> show no OpenAchieve models
 			const template = models.find((m) => m.provider === "openachieve");
 			if (!template) return models;
-			const others = models.filter((m) => m.provider !== "openachieve");
-			const rebuilt = ids.map((id) => ({ ...template, id, name: prettifyModelId(id) }));
+			const rebuilt = cached.map((id) => ({ ...template, id, name: prettifyModelId(id) }));
 			return [...others, ...rebuilt];
 		},
 	},
