@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.83.5] - 2026-06-20
+
+### Changed
+
+- The built-in **OpenAchieve** provider now fetches its model list dynamically from the backend (`GET /api/v1/models`) at login and token refresh, caching the account's allowed model ids. New server-side models (per subscription tier) now appear after re-login without requiring a CLI release; the previous static list remains as an offline fallback.
+
 ## [0.83.4] - 2026-06-19
 
 ### Fixed
