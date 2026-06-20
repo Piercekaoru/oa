@@ -1,6 +1,6 @@
 {
 	"name": "@openachieve/agent",
-	"version": "0.83.5",
+	"version": "0.83.6",
 	"description": "Coding agent CLI with read, bash, edit, write tools and session management",
 	"type": "module",
 	"openachieveConfig": {
@@ -50,9 +50,9 @@
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "1.29.0",
-		"@openachieve/agent-core": "^0.83.5",
-		"@openachieve/ai": "^0.83.5",
-		"@openachieve/tui": "^0.83.5",
+		"@openachieve/agent-core": "^0.83.6",
+		"@openachieve/ai": "^0.83.6",
+		"@openachieve/tui": "^0.83.6",
 		"@silvia-odwyer/photon-node": "0.3.4",
 		"chalk": "5.6.2",
 		"cross-spawn": "7.0.6",
